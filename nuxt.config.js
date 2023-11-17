@@ -1,4 +1,4 @@
-import api from './server/apiMiddleware.js'
+import apiMiddleware from './server/apiMiddleware.js'
 import websocketServer from './server/websocketServer.js'
 export default {
   head: {
@@ -12,7 +12,7 @@ export default {
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
   serverMiddleware: [
-    { path: '/api', handler: api },
+    { path: '/api', handler: apiMiddleware },
     { path: '/ws', handler: websocketServer },
   ],
   // Global CSS: https://go.nuxtjs.dev/config-css
