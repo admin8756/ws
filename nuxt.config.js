@@ -1,8 +1,8 @@
-import path from 'path'
+import api from './server/apiMiddleware.js'
+import websocketServer from './server/websocketServer.js'
 export default {
-  // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'ws',
+    title: '自动抓取工具',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -12,7 +12,8 @@ export default {
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
   serverMiddleware: [
-    { path: '/api', handler: path.resolve(__dirname, 'websocketServer.js') }, // 修改为你的 WebSocket 服务器文件路径
+    { path: '/api', handler: api },
+    { path: '/ws', handler: websocketServer },
   ],
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [],
@@ -46,7 +47,7 @@ export default {
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
-      lang: 'en',
+      lang: 'zh-CN',
     },
   },
 

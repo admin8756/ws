@@ -18,6 +18,9 @@
       <input v-model="messageInput" type="text" placeholder="输入消息" />
       <button @click="sendMessage">发送消息</button>
     </div>
+    <div>
+      <button @click="testReq">测试请求</button>
+    </div>
   </div>
 </template>
 
@@ -43,7 +46,7 @@ export default {
     initWebSocket() {
       // 判断是否是浏览器环境
       if (process.browser) {
-        this.socket = new WebSocket('ws://localhost:8080')
+        this.socket = new WebSocket('ws://localhost:8090')
       } else {
         this.socket = {}
       }
@@ -70,6 +73,11 @@ export default {
       this.socket.send(message)
       this.messageInput = ''
     },
+    testReq(){
+      this.$axios.get('/api/Logs/getLogs').then(res => {
+        console.log(res)
+      })
+    }
   },
 }
 </script>
