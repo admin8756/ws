@@ -1,10 +1,6 @@
 // apiMiddleware.js
 import classes from './index';
 
-function checkExist(instance, name) {
-  return typeof instance[name] === 'function';
-}
-
 module.exports = function (req, res, next) {
   const { method, url } = req;
   // method = 'GET || POST'
