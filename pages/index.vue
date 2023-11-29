@@ -1,14 +1,14 @@
 <template>
   <div>
     <h2>日志列表：</h2>
-    <div style="height: 50vh; overflow: auto;">
-      <DynamicScroller class="scroller" :item-size="26" :min-item-size="20" :items="list" key-field="id">
+    <div class="h-[50vh] overflow-auto">
+      <DynamicScroller :item-size="26" :min-item-size="20" :items="list" key-field="id">
         <template #default="{ item, index, active }">
           <DynamicScrollerItem :item="item" :active="active" :size-dependencies="[item.msg]" :data-index="index">
             <div class="card" :class="item.level">
               <div>
                 <div><strong>{{ item.msg }}</strong> </div>
-                <div style="margin-top: 10px;">{{ item.time }}</div>
+                <div class="mt-2">{{ item.time }}</div>
               </div>
               <div><strong>{{ item.type.toUpperCase() }}</strong></div>
             </div>
@@ -16,7 +16,7 @@
         </template>
       </DynamicScroller>
     </div>
-    <div>
+    <div class="flex items-center justify-center mt-4">
       <button class="button-default button" @click="testReq">测试请求</button>
     </div>
   </div>
