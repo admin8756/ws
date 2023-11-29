@@ -1,14 +1,28 @@
 <template>
   <div class="p-4">
     <el-tabs v-model="activeName">
-      <el-tab-pane label="工具状态" name="state">
-
+      <el-tab-pane label="状态" name="state">
+        <el-card body-style="padding:0">
+          <div slot="header" class="flex justify-between items-center">
+            <div class="block">
+              ws链接状态: <span class="text-red-500">已连接</span>
+            </div>
+            <el-button type="primary" @click="getLogs">连接</el-button>
+          </div>
+          <div class="card" v-for="(item, index) in serviceList" :key="index" :class="item.level">
+            <div>
+              <div class="font-bold">{{ item.title }}</div>
+              <div class="mt-2">{{ item.type }}</div>
+            </div>
+            <div class="font-bold">{{ item.key.toUpperCase() }}</div>
+          </div>
+        </el-card>
       </el-tab-pane>
-      <el-tab-pane label="日志列表" name="logs">
-        <el-card body-style="padding-none">
+      <el-tab-pane label="日志" name="logs">
+        <el-card body-style="padding:0">
           <div slot="header" class="flex justify-between">
             <div class="block">
-              <el-date-picker v-model="logFrom.date" type="date" placeholder="选择日期">
+              <el-date-picker style="width: 200px;" v-model="logFrom.date" type="date" placeholder="选择日期">
               </el-date-picker>
             </div>
             <el-button type="primary" @click="getLogs">获取日志</el-button>
@@ -30,8 +44,7 @@
           </div>
         </el-card>
       </el-tab-pane>
-      <el-tab-pane label="角色管理" name="third">角色管理</el-tab-pane>
-      <el-tab-pane label="定时任务补偿" name="fourth">定时任务补偿</el-tab-pane>
+      <el-tab-pane label="管理" name="third">工具管理</el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -49,6 +62,59 @@ export default {
       list: [],
       logFrom: {
         date: ""
+      },
+      serviceList: [
+        {
+          title: "授权状态",
+          type: "Boolean",
+          key: "authorization",
+          state: ["已授权", "未授权"],
+        },
+        {
+          title: "登录状态",
+          type: "Boolean",
+          key: "alreadyLogged",
+          state: ["已登录", "未登录"],
+        },
+        {
+          title: "加解密",
+          type: "Boolean",
+          key: "decryption",
+          state: ["可用", "不可用"],
+        },
+        {
+          title: "服务运行时间",
+          type: "Date",
+          key: "serviceTime",
+          state: ["已运行", "未运行"],
+        },
+        {
+          title: "服务版本",
+          type: "String",
+          key: "serviceVersion",
+          state: ["已运行", "未运行"],
+        },
+        {
+          title: "运行环境",
+          type: "Number",
+          key: "environment",
+          state: ["测试环境", "生产环境"],
+        },
+        {
+          title: "运行状态",
+          type: "Boolean",
+          key: "status",
+          state: ["正在运行", "停止运行"],
+        },
+        {
+          title: "运行模式",
+          type: "Number",
+          key: "mode",
+          state: ["历史模式", "即时模式"],
+        },
+      ],
+      serviceState: {
+
       },
       activeName: "state"
     }
@@ -70,16 +136,12 @@ export default {
           })
         })
       })
-    }
+    },
+
   },
 }
 </script>
 <style scoped>
-.bar-item {
-  display: flex;
-  justify-content: space-between;
-}
-
 .card {
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -123,36 +185,5 @@ export default {
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.3s ease;
-}
-
-/* 默认按钮样式 */
-.button-default {
-  color: #fff;
-  background-color: #0074cc;
-  border: 2px solid #0074cc;
-}
-
-/* 鼠标悬停时的样式 */
-.button-default:hover {
-  background-color: #005a9e;
-  border-color: #005a9e;
-}
-
-/* 可以根据需要添加其他按钮样式，例如主要按钮、次要按钮等 */
-.button-primary {
-  color: #fff;
-  background-color: #4caf50;
-  border: 2px solid #4caf50;
-}
-
-.button-primary:hover {
-  background-color: #45a049;
-  border-color: #45a049;
-}
-
-/* 禁用状态样式 */
-.button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 </style>

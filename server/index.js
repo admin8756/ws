@@ -48,7 +48,32 @@ class Logs {
   }
 }
 
+// 工具类
+class Tools {
+  static state() {
+    return {
+      // 是否已授权
+      authorization: false,
+      // 是否已登录
+      alreadyLogged: false,
+      // 加解密是否可用
+      decryption: false,
+      // 服务运行时间
+      serviceTime: '',
+      // 服务版本
+      serviceVersion: '',
+      // 运行环境
+      environment:'',
+      // 运行状态
+      status: '',
+      // 运行模式
+      mode: '',
+    }
+  }
+}
+
 export default {
   User,
   Logs,
+  Tools
 };
