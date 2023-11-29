@@ -1,29 +1,44 @@
 <template>
-  <div>
-    <h2>日志列表：</h2>
-    <div class="h-[50vh] overflow-auto">
-      <DynamicScroller :item-size="26" :min-item-size="20" :items="list" key-field="id">
-        <template #default="{ item, index, active }">
-          <DynamicScrollerItem :item="item" :active="active" :size-dependencies="[item.msg]" :data-index="index">
-            <div class="card" :class="item.level">
-              <div>
-                <div><strong>{{ item.msg }}</strong> </div>
-                <div class="mt-2">{{ item.time }}</div>
-              </div>
-              <div><strong>{{ item.type.toUpperCase() }}</strong></div>
+  <div class="p-4">
+    <el-tabs v-model="activeName">
+      <el-tab-pane label="工具状态" name="state">
+
+      </el-tab-pane>
+      <el-tab-pane label="日志列表" name="logs">
+        <el-card body-style="padding-none">
+          <div slot="header" class="flex justify-between">
+            <div class="block">
+              <el-date-picker v-model="logFrom.date" type="date" placeholder="选择日期">
+              </el-date-picker>
             </div>
-          </DynamicScrollerItem>
-        </template>
-      </DynamicScroller>
-    </div>
-    <div class="flex items-center justify-center mt-4">
-      <button class="button-default button" @click="testReq">测试请求</button>
-    </div>
+            <el-button type="primary" @click="getLogs">获取日志</el-button>
+          </div>
+          <div class="h-[80vh] overflow-auto">
+            <DynamicScroller :item-size="26" :min-item-size="20" :items="list" key-field="id">
+              <template #default="{ item, index, active }">
+                <DynamicScrollerItem :item="item" :active="active" :size-dependencies="[item.msg]" :data-index="index">
+                  <div class="card" :class="item.level">
+                    <div>
+                      <div class="font-bold">{{ item.msg }}</div>
+                      <div class="mt-2">{{ item.time }}</div>
+                    </div>
+                    <div class="font-bold">{{ item.type.toUpperCase() }}</div>
+                  </div>
+                </DynamicScrollerItem>
+              </template>
+            </DynamicScroller>
+          </div>
+        </el-card>
+      </el-tab-pane>
+      <el-tab-pane label="角色管理" name="third">角色管理</el-tab-pane>
+      <el-tab-pane label="定时任务补偿" name="fourth">定时任务补偿</el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script>
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
+import dayjs from 'dayjs';
 export default {
   components: {
     DynamicScroller,
@@ -31,14 +46,24 @@ export default {
   },
   data() {
     return {
-      list: []
+      list: [],
+      logFrom: {
+        date: ""
+      },
+      activeName: "state"
     }
   },
   created() {
+    this.logFrom.date = dayjs().format("YYYY-MM-DD")
   },
   methods: {
-    testReq() {
-      this.$axios.get('/api/Logs/getLogList/app/2023-11-29').then(res => {
+    getLogs() {
+      const { date } = this.logFrom
+      let baseUrl = `/api/Logs/getLogList/app/`
+      if (date) {
+        baseUrl = `${baseUrl}/${date}`
+      }
+      this.$axios.get(baseUrl).then(res => {
         this.$axios.get(`/api/Logs/getLog/${res.data[0]}`).then(log => {
           this.list = log.data.map((k, i) => {
             return { ...k, id: i }
