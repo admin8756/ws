@@ -1,7 +1,7 @@
 import { Server } from 'ws'
 
 // 创建一个 WebSocket 服务器，监听指定的端口
-const wss = new Server({ port: 8090 }) // 选择你希望使用的端口号
+const wss = new Server({ port: 12591 }) // 选择你希望使用的端口号
 
 let WebS = null
 

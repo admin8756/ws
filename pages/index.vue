@@ -46,7 +46,7 @@ export default {
     initWebSocket() {
       // 判断是否是浏览器环境
       if (process.browser) {
-        this.socket = new WebSocket('ws://localhost:8090')
+        this.socket = new WebSocket('ws://localhost:12591')
       } else {
         this.socket = {}
       }
@@ -74,7 +74,7 @@ export default {
       this.messageInput = ''
     },
     testReq(){
-      this.$axios.get('/api/Logs/getLogs').then(res => {
+      this.$axios.get('/api/User/getUser/123').then(res => {
         console.log(res)
       })
     }

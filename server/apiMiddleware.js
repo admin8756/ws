@@ -1,40 +1,37 @@
 // apiMiddleware.js
 import classes from './index';
 
-function checkClassExist(className) {
-  return !!classes[className];
-}
-
-function checkMethodExist(instance, methodName) {
-  return typeof instance[methodName] === 'function';
+function checkExist(instance, name) {
+  return typeof instance[name] === 'function';
 }
 
 module.exports = function (req, res, next) {
   const { method, url } = req;
-  res.end(JSON.stringify(method, url ))
+  // method = 'GET || POST'
   try {
-    const { path } = req.Url;
-    const [, , className, methodName, ...args] = path.split('/').filter(part => part !== '');
-    console.log(className, methodName, args);
-    if (!checkClassExist(className)) {
-      res.status(404)
-      res.end(`Class not found:${className} `);
-      return;
+    const [className, methodName, ...args] = url.split('/').slice(1);
+    if (!classes[className]) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end(`Class not found: ${className}`)
+      return
     }
 
-    const instance = new classes[className]();
-
-    if (!checkMethodExist(instance, methodName)) {
-      res.status(404)
-      res.end(`Method not found :${methodName}`);
-      return;
+    if (!classes[className][methodName]) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end(`Method not found: ${methodName}`);
+      return
     }
 
-    const result = instance[methodName](...args);
-    res.setHeader('Content-Type', 'application/json');
+    const result = classes[className][methodName](...args || []);
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    });
     res.end(JSON.stringify(result));
   } catch (error) {
     console.error(error);
-    res.status(500).end('Internal Server Error: ' + error.message);
+    res.writeHead(500, { 'Content-Type': 'text/plain' });
+    res.end('internalServerError: ' + error.message);
   }
 };
