@@ -52,6 +52,10 @@ class Logs {
 class Tools {
   static state() {
     return {
+      // 心跳模式
+      heartStatus: false,
+      // 脚本运行状态
+      runStatus: false,
       // 是否已授权
       authorization: false,
       // 是否已登录
@@ -63,7 +67,7 @@ class Tools {
       // 服务版本
       serviceVersion: '',
       // 运行环境
-      environment:'',
+      environment: '',
       // 运行状态
       status: '',
       // 运行模式

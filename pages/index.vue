@@ -9,12 +9,36 @@
             </div>
             <el-button type="primary" @click="getLogs">连接</el-button>
           </div>
-          <div class="card" v-for="(item, index) in serviceList" :key="index" :class="item.level">
-            <div>
-              <div class="font-bold">{{ item.title }}</div>
-              <div class="mt-2">{{ item.type }}</div>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 overflow-auto h-[80vh]">
+            <div v-for="(item, index) in serviceList" :key="index" class="p-4 rounded shadow-md bg-white">
+              <p class="font-bold text-lg mb-2">{{ item.title }}</p>
+              <div class="text-gray-600">
+                <template v-if="item.type === 'Boolean'">
+                  <!-- Boolean type structure -->
+                  <div :class="statusClasses(item.value)">
+                    {{ item.state[item.value ? 0 : 1] }}
+                  </div>
+                </template>
+                <template v-else-if="item.type === 'Date'">
+                  <!-- Date type structure -->
+                  <div>
+                    {{ item.value }}
+                  </div>
+                </template>
+                <template v-else-if="item.type === 'String'">
+                  <!-- String type structure -->
+                  <div>
+                    {{ item.value }}
+                  </div>
+                </template>
+                <template v-else-if="item.type === 'Number'">
+                  <!-- Number type structure -->
+                  <div :class="statusClasses(item.value)">
+                    {{ item.state[item.value ? 0 : 1] }}
+                  </div>
+                </template>
+              </div>
             </div>
-            <div class="font-bold">{{ item.key.toUpperCase() }}</div>
           </div>
         </el-card>
       </el-tab-pane>
@@ -65,52 +89,73 @@ export default {
       },
       serviceList: [
         {
+          title: '脚本运行状态',
+          type: 'Boolean',
+          key: "runStatus",
+          state: ['未在运行', '正在运行'],
+          value: false,
+        }, {
+          title: '心跳状态',
+          type: 'Boolean',
+          key: "heartStatus",
+          state: ['未在运行', '正在运行'],
+          value: false,
+        },
+        {
           title: "授权状态",
           type: "Boolean",
           key: "authorization",
           state: ["已授权", "未授权"],
+          value: false,
         },
         {
           title: "登录状态",
           type: "Boolean",
           key: "alreadyLogged",
           state: ["已登录", "未登录"],
+          value: false,
         },
         {
           title: "加解密",
           type: "Boolean",
           key: "decryption",
           state: ["可用", "不可用"],
+          value: false,
         },
         {
           title: "服务运行时间",
           type: "Date",
           key: "serviceTime",
           state: ["已运行", "未运行"],
+          value: '-',
         },
         {
           title: "服务版本",
           type: "String",
           key: "serviceVersion",
           state: ["已运行", "未运行"],
+          value: '-',
         },
         {
           title: "运行环境",
           type: "Number",
           key: "environment",
           state: ["测试环境", "生产环境"],
+          value: -1,
         },
         {
           title: "运行状态",
           type: "Boolean",
           key: "status",
           state: ["正在运行", "停止运行"],
+          value: false
         },
         {
           title: "运行模式",
           type: "Number",
           key: "mode",
           state: ["历史模式", "即时模式"],
+          value: -1
         },
       ],
       serviceState: {
@@ -118,6 +163,14 @@ export default {
       },
       activeName: "state"
     }
+  },
+  computed: {
+    statusClasses() {
+      return (value) => ({
+        'text-green-500': value,
+        'text-red-500': !value,
+      });
+    },
   },
   created() {
     this.logFrom.date = dayjs().format("YYYY-MM-DD")
@@ -172,18 +225,5 @@ export default {
 
 .card.INFO {
   background: #97979780;
-}
-
-/* 基本按钮样式 */
-.button {
-  display: inline-block;
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
 }
 </style>
