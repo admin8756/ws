@@ -7,7 +7,7 @@
             <div class="block">
               ws链接状态: <span class="text-red-500">已连接</span>
             </div>
-            <el-button type="primary" @click="getLogs">连接</el-button>
+            <el-button type="primary" @click="getState">连接</el-button>
           </div>
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 overflow-auto h-[80vh]">
             <div v-for="(item, index) in serviceList" :key="index" class="p-4 rounded shadow-md bg-white">
@@ -111,7 +111,7 @@ export default {
         {
           title: "登录状态",
           type: "Boolean",
-          key: "alreadyLogged",
+          key: "logged",
           state: ["已登录", "未登录"],
           value: false,
         },
@@ -139,7 +139,7 @@ export default {
         {
           title: "运行环境",
           type: "Number",
-          key: "environment",
+          key: "env",
           state: ["测试环境", "生产环境"],
           value: -1,
         },
@@ -190,7 +190,15 @@ export default {
         })
       })
     },
-
+    getState() {
+      this.$axios.get(`/api/Tools/state`).then(res => {
+        console.log(res.data)
+        // this.serviceState = res.data
+        // this.serviceList.forEach(item => {
+        //   item.value = this.serviceState[item.key]
+        // })
+      })
+    }
   },
 }
 </script>
@@ -198,7 +206,7 @@ export default {
 .card {
   border: 1px solid #ccc;
   border-radius: 8px;
-  padding: 15px;
+  padding: 15px; 
   margin: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: #fff;

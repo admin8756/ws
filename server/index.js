@@ -1,4 +1,5 @@
-import { formatLog } from '../utils/index';
+import { Config, formatLog } from '../utils/index';
+import { runScript } from './tools.js';
 // index.js
 const fs = require('fs');
 
@@ -50,29 +51,12 @@ class Logs {
 
 // 工具类
 class Tools {
+  static async init() {
+    const res = await runScript()
+    return res
+  }
   static state() {
-    return {
-      // 心跳模式
-      heartStatus: false,
-      // 脚本运行状态
-      runStatus: false,
-      // 是否已授权
-      authorization: false,
-      // 是否已登录
-      alreadyLogged: false,
-      // 加解密是否可用
-      decryption: false,
-      // 服务运行时间
-      serviceTime: '',
-      // 服务版本
-      serviceVersion: '',
-      // 运行环境
-      environment: '',
-      // 运行状态
-      status: '',
-      // 运行模式
-      mode: '',
-    }
+    return Config.get()
   }
 }
 
