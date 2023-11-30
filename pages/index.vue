@@ -132,7 +132,7 @@ export default {
         {
           title: "服务版本",
           type: "String",
-          key: "serviceVersion",
+          key: "version",
           state: ["已运行", "未运行"],
           value: '-',
         },
@@ -174,6 +174,7 @@ export default {
   },
   created() {
     this.logFrom.date = dayjs().format("YYYY-MM-DD")
+    this.$axios.get(`/api/Tools/init`)
   },
   methods: {
     getLogs() {
