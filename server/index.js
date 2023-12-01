@@ -1,5 +1,6 @@
 import { Config, formatLog } from '../utils/index';
 import { runScript } from './tools.js';
+
 // index.js
 const fs = require('fs');
 
@@ -37,6 +38,7 @@ class Logs {
     }
     return list;
   }
+
   static getLog(name) {
     const filePath = `./logs/${name}`;
     // 判断文件是否存在
@@ -51,10 +53,10 @@ class Logs {
 
 // 工具类
 class Tools {
-  static async init() {
-    const res = await runScript()
-    return res
+  static init() {
+    return runScript()
   }
+
   static state() {
     return Config.get()
   }

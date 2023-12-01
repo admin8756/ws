@@ -4,9 +4,12 @@
   "authorization": false,
   "logged": false,
   "decryption": false,
-  "serviceTime": "2023-11-30T08:18:33.888Z",
+  "serviceTime": "2023-12-01T09:37:14.526Z",
   "version": "1.0.0",
-  "env": "",
+  "env": "test",
   "status": "",
-  "mode": ""
+  "CFCAstatus": "",
+  "mode": "",
+  "ukey": "",
+  "token": null
 }

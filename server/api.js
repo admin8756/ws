@@ -1,55 +1,207 @@
-import axios from "axios";
-import { Config } from "@/utils";
-const TEST_ENV = 'https://test.linkcloud-energy.com/prod-api/'
-const PROD_ENV = 'https://sys.linkcloud-energy.com/prod-api/'
-const STATUS_CODE = {
-    400: "客户端请求的语法错误，服务器无法理解",
-    401: "请求要求用户的身份认证",
-    403: "服务器理解请求客户端的请求，但是拒绝执行此请求",
-    404: "服务器无法根据客户端的请求找到资源",
-    405: "客户端请求中的方法被禁止",
-    408: "接口响应超时",
-    500: "服务器内部错误，无法完成请求",
-    501: "服务器不支持请求的功能，无法完成请求",
-    502: "代理工作的服务器收到了无效的响应",
-    503: "超载或系统维护,系统暂时的无法处理请求",
-    505: "服务器不支持请求的HTTP协议的版本",
+import { Config, getSortKeys } from '../utils/index.js';
+import { logger } from '../utils/logs.js';
+import request from './request.js';
+import sgccPlus from './sgcc-plus.js';
+
+export const USER_CONFIG = {
+    name: "ljn2017",
+    password: "20172017y.",
+    code: '852963'
 };
+
+// 测试环境
 export const USER_CONFIG_TEST = {
     name: "shoudian",
     password: "ab123456",
     code: '123456'
 };
-const baseURL = Config.get('env') === 0 ? TEST_ENV : PROD_ENV
-const server = new axios.create({
-    url: baseURL,
-    timeout: 120 * 10000,
-});
 
-service.interceptors.response.use(
-    (response) => {
-        logger.info(`${getEnv()}${response.config.url}`);
-        const res = response.data;
-        if (res && res.code !== 0) {
-            if (res.msg === "token is null") {
-                // 处理登录失效
-                logger.error("登录失效，退出");
-                const timer = setTimeout(() => {
-                    clearTimeout(timer);
-                    process.exit(0);
-                }, 1000);
+// 登录
+export const login = () => {
+    const userData = getNowUserInfo();
+    return request.post("login/token", {
+        loginName: userData.name,
+        loginPwd: userData.password,
+    });
+}
+
+export const getNowUserInfo = () => {
+    const typeList = {
+        test: USER_CONFIG_TEST,
+        prod: USER_CONFIG,
+    };
+    const env = Config.get('env');
+    if (!typeList[env]) {
+        throw new Error("请先选择环境");
+    }
+    return typeList[env];
+};
+
+/**
+ * 一键授权
+ * @param {*} code 
+ * @param {*} loginType 
+ * @returns 
+ */
+
+export const authorizeCfca = (code, loginType) => {
+    return request.post("/sgcAuthorization/bindCook", {
+        code,
+        loginType
+    });
+};
+
+
+/**
+ * 根据开始日期和结束日期获取需要处理数据的日期集合
+ * @param {String} sDay
+ * @param {String} eDay
+ */
+export const getDays = (sDay, eDay) => {
+    return request.get(
+        `spotCommon/queryRunDate?startTime=${sDay}&endTime=${eDay}`
+    );
+};
+
+
+/**
+ * 解密获取的实时或者日前的数据
+ * @param {String} caseType
+ * @param {String} dateTime
+ */
+export const getData = async (caseType, dateTime) => {
+    const postData = {
+        urlCode: "loadUserPlanPriceDecodeNew",
+        params: {
+            dateTime,
+            caseType,
+        },
+    };
+    const { data } = await commonCallSgcc(postData);
+    // 如果数据存在，则返回数据，否则返回空对象
+    if (data) {
+        const res = JSON.parse(data);
+        if (res.data) {
+            let { southAreaPrice, northAreaPrice } = res.data;
+            const allData = await Promise.all([
+                sgccPlus.decrypt.decryptDataNoTime(southAreaPrice),
+                sgccPlus.decrypt.decryptDataNoTime(northAreaPrice),
+            ]);
+            southAreaPrice = getSortKeys(allData[0]);
+            northAreaPrice = getSortKeys(allData[1]);
+            return {
+                southAreaPrice,
+                northAreaPrice,
+            };
+        } else {
+            const errMsg = `${dateTime}没有${caseType === "realtime" ? "实时" : "日前"
+                }数据`;
+            logger.error(errMsg);
+            return {
+                southAreaPrice: [],
+                northAreaPrice: [],
+            };
+        }
+    }
+    return {};
+};
+
+
+// 判断ca授权状态
+export const checkCfcaStatus = async () => {
+    const { success, data } = await request.post("sgcc/commonCall/info", {
+        urlCode: "info",
+        params: {},
+    });
+    const res = success ? JSON.parse(data) : false;
+    if (!res) {
+        const userData = getNowUserInfo();
+        const caData = await authorizeCfca(userData.code, 1)
+        if (caData.success) {
+            return await checkCfcaStatus();
+        } else {
+            await logger.error("CFCA未授权,且一键授权失败");
+        }
+    }
+    return res;
+};
+
+// 获取ukey证书编码
+export const getCFCAUkey = async () => {
+    const keyData = Config.get('ukey');
+    try {
+        if (!keyData.ukey) {
+            await logger.error("ukey未缓存");
+            throw new Error("ukey未缓存");
+        } else {
+            const { time, ukey } = keyData;
+            if (new Date().getTime() - time < 1000 * 60) {
+                Config.set("ukey", {
+                    time: new Date().getTime(),
+                    ukey,
+                })
+                // 更新缓存时间
+                return ukey;
+            } else {
+                await logger.error("ukey缓存过期");
+                throw new Error("ukey缓存过期");
             }
         }
-        return res;
-    },
-    (error) => {
-        const { status, request } = error.response;
-        const errorLog = {
-            error: STATUS_CODE[status],
-            responseURL: request.responseURL,
-        };
-        logger.error(`调用${getEnv()}${request.responseURL}失败 【${errorLog}】`);
-        return data;
+    } catch (error) {
+        const { data } = await commonCallSgcc({
+            urlCode: "getUkeyCode",
+        });
+        const ukey = JSON.parse(data).data;
+        Config.set('ukey', {
+            time: new Date().getTime(),
+            ukey,
+        })
+        return ukey;
     }
-);
-export default server
+};
+
+// 获取公钥
+export const getPublicKey = async () => {
+    const { data } = await commonCallSgcc({
+        urlCode: 'getPubKey'
+    })
+    return JSON.parse(data).msg
+}
+// mos加密
+export const encryptMos = async (publicKey, msg) => {
+    if (!publicKey || !msg) throw new Error('参数错误')
+    const { data } = await request.post('encipher/mosEnergy', { publicKey, msg })
+    return data || {}
+}
+// 日前加密
+export const encryptDayAhead = async msg => {
+    const { data } = await request.post('encipher/dayAheadEncrypt', { msg })
+    return data || {}
+}
+/**
+ * 获取实时或者日前的数据
+ * @param {*} data
+ * @returns
+ */
+export const commonCallSgcc = (data) => {
+    return request.post(`sgcc/commonCall/${data.urlCode}`, data);
+};
+
+// 现货公开新增接口
+export const spotCommonAdd = (addData) => {
+    return request.post("spotCommon/add", addData);
+};
+/**
+ * @name decryptData 解密接口
+ * @param {Object} postData 解密数据
+ * @returns {Object} 解密后的数据
+ * @description: 解密接口
+  */
+export const decryptData = async (postData) => {
+    const { data } = await request.post('/encipher/decrypt', { encryptData: postData.data })
+    if (data) {
+        return JSON.parse(data)
+    } else {
+        return ''
+    }
+}

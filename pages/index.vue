@@ -172,9 +172,10 @@ export default {
       });
     },
   },
-  created() {
+  async created() {
     this.logFrom.date = dayjs().format("YYYY-MM-DD")
-    this.$axios.get(`/api/Tools/init`)
+    const data = await this.$axios.get(`/api/Tools/init`)
+    console.log(data)
   },
   methods: {
     getLogs() {
@@ -207,7 +208,7 @@ export default {
 .card {
   border: 1px solid #ccc;
   border-radius: 8px;
-  padding: 15px; 
+  padding: 15px;
   margin: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: #fff;
