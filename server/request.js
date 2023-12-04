@@ -50,13 +50,13 @@ service.interceptors.response.use(
         return data;
     },
     (error) => {
-        const { status, request } = error.response || {};
+        const { status, request, data, config } = error.response || {};
         if (status || request) {
             const errorLog = {
                 error: STATUS_CODE[status] || '未知',
-                responseURL: request.responseURL,
+                responseURL: config.url,
             };
-            logger.error(`调用${request.baseURL}${request.responseURL}失败 【${status}】${errorLog}`);
+            logger.error(`调用${config.url}失败 【${status}】${errorLog.error} ${data.error}`);
         }
     }
 );

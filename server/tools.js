@@ -1,6 +1,6 @@
 import { logger } from '../utils/logs';
 import { Config } from '../utils/index';
-import { login } from './api';
+import { login, getUserInfo } from './api';
 
 export const runScript = async () => {
     // 更新脚本运行时间
@@ -11,8 +11,19 @@ export const runScript = async () => {
     // 检查token是否存在
     if (!Config.get('token')) {
         await tryLogin()
+    } else {
+        const userInfo = await getUserInfo()
+        if (userInfo.userName) {
+            logger.info(`登录成功，用户名：${userInfo.userName}`)
+        } else {
+            await tryLogin()
+            logger.error('登录失败，获取用户信息失败')
+            Config.set('runStatus', false)
+        }
     }
+    logger.info('脚本运行结束')
 }
+
 // 尝试登录
 export const tryLogin = async () => {
     logger.info('开始登录')

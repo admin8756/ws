@@ -4,12 +4,12 @@
   "authorization": false,
   "logged": false,
   "decryption": false,
-  "serviceTime": "2023-12-04T06:30:47.032Z",
+  "serviceTime": "2023-12-04T08:48:05.389Z",
   "version": "1.0.0",
   "env": "test",
   "status": "",
   "CFCAstatus": "",
   "mode": "",
   "ukey": "",
-  "token": "eyJhbGciOiJIUzI1NiIsIlR5cGUiOiJKd3QiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3MDE2NzIzNDYsInVzZXJJZCI6M30.HTIjoksaUcxk3Fc2Q0-DUGLG2ZKA200JYoX0CspzsYE"
+  "token": "eyJhbGciOiJIUzI1NiIsIlR5cGUiOiJKd3QiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3MDE2Nzk1ODgsInVzZXJJZCI6M30.yDlpXd1pBvETAi4DnIZAxmtXfjLxItFmQco7tvNsWLo"
 }

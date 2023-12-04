@@ -206,3 +206,10 @@ export const decryptData = async (postData) => {
         return ''
     }
 }
+
+// 获取用户信息
+export const getUserInfo = async () => {
+    const { data } = await request.post('user/info', {});
+    logger.info(data)
+    return data
+}
