@@ -2,7 +2,7 @@
 import classes from './index';
 
 module.exports = function (req, res, next) {
-  const { method, url } = req;
+  const { url } = req;
   // method = 'GET || POST'
   try {
     const [className, methodName, ...args] = url.split('/').slice(1);
@@ -26,7 +26,6 @@ module.exports = function (req, res, next) {
     });
     res.end(JSON.stringify(result));
   } catch (error) {
-    console.error(error);
     res.writeHead(500, { 'Content-Type': 'text/plain' });
     res.end('internalServerError: ' + error.message);
   }

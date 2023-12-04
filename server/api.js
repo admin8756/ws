@@ -3,6 +3,7 @@ import { logger } from '../utils/logs.js';
 import request from './request.js';
 import sgccPlus from './sgcc-plus.js';
 
+// 正式用户配置
 export const USER_CONFIG = {
     name: "ljn2017",
     password: "20172017y.",
@@ -24,7 +25,7 @@ export const login = () => {
         loginPwd: userData.password,
     });
 }
-
+// 获取登录信息
 export const getNowUserInfo = () => {
     const typeList = {
         test: USER_CONFIG_TEST,

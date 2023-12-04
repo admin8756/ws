@@ -46,7 +46,7 @@
         <el-card body-style="padding:0">
           <div slot="header" class="flex justify-between">
             <div class="block">
-              <el-date-picker style="width: 200px;" v-model="logFrom.date" type="date" placeholder="选择日期">
+              <el-date-picker v-model="logFrom.date" style="width: 200px;" type="date" placeholder="选择日期">
               </el-date-picker>
             </div>
             <el-button type="primary" @click="getLogs">获取日志</el-button>
@@ -68,7 +68,9 @@
           </div>
         </el-card>
       </el-tab-pane>
-      <el-tab-pane label="管理" name="third">工具管理</el-tab-pane>
+      <el-tab-pane label="管理" name="third">
+        <el-button>开始运行</el-button>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>

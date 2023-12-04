@@ -1,8 +1,9 @@
-import Axios from "axios";
+import axios from "axios";
 import { Config } from '../utils/index.js';
 import { logger } from "../utils/logs.js";
-const TEST_ENV = 'https://test.linkcloud-energy.com/prod-api/'
-const PROD_ENV = 'https://sys.linkcloud-energy.com/prod-api/'
+
+const TEST_ENV = 'https://test.linkcloud-energy.com/prod-api/';
+const PROD_ENV = 'https://sys.linkcloud-energy.com/prod-api/';
 
 const STATUS_CODE = {
     400: "客户端请求的语法错误，服务器无法理解",
@@ -18,10 +19,10 @@ const STATUS_CODE = {
     505: "服务器不支持请求的HTTP协议的版本",
 };
 
-const baseURL = Config.get('env') === 0 ? TEST_ENV : PROD_ENV
+const baseURL = Config.get('env') ? TEST_ENV : PROD_ENV;
 
-const service = Axios.create({
-    url: baseURL,
+const service = axios.create({
+    baseURL,
     timeout: 120 * 10000,
 });
 
@@ -31,12 +32,13 @@ service.interceptors.request.use(
         return config;
     },
 );
+
 service.interceptors.response.use(
     (response) => {
-        logger.info(`${baseURL}${response.config.url}`);
-        const res = response.data;
-        if (res && res.code !== 0) {
-            if (res.msg === "token is null") {
+        const { config, data } = response;
+        logger.info(`${config.baseURL}${config.url}`);
+        if (data && data.code !== 0) {
+            if (data.msg === "token is null") {
                 // 处理登录失效
                 logger.error("登录失效，退出");
                 const timer = setTimeout(() => {
@@ -45,7 +47,7 @@ service.interceptors.response.use(
                 }, 1000);
             }
         }
-        return res;
+        return data;
     },
     (error) => {
         const { status, request } = error.response || {};
@@ -54,8 +56,9 @@ service.interceptors.response.use(
                 error: STATUS_CODE[status] || '未知',
                 responseURL: request.responseURL,
             };
-            logger.error(`调用${baseURL}${request.responseURL}失败 【${status}】${errorLog}`);
+            logger.error(`调用${request.baseURL}${request.responseURL}失败 【${status}】${errorLog}`);
         }
     }
 );
-export default service
+
+export default service;
