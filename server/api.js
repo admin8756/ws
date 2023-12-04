@@ -110,13 +110,17 @@ export const getData = async (caseType, dateTime) => {
 
 // 判断ca授权状态
 export const checkCfcaStatus = async () => {
+    logger.info("开始检查CFCA授权状态");
     const { success, data } = await request.post("sgcc/commonCall/info", {
         urlCode: "info",
         params: {},
     });
+    await logger[success?'info':'error'](`CFCA${success ? '已' : '未'}授权`);
+    Config.set('CFCAstatus', success)
     const res = success ? JSON.parse(data) : false;
     if (!res) {
         const userData = getNowUserInfo();
+        logger.info("开始一键授权CFCA");
         const caData = await authorizeCfca(userData.code, 1)
         if (caData.success) {
             return await checkCfcaStatus();
@@ -210,6 +214,5 @@ export const decryptData = async (postData) => {
 // 获取用户信息
 export const getUserInfo = async () => {
     const { data } = await request.post('user/info', {});
-    logger.info(data)
     return data
 }

@@ -1,6 +1,6 @@
 import { logger } from '../utils/logs';
 import { Config } from '../utils/index';
-import { login, getUserInfo } from './api';
+import { login, getUserInfo, checkCfcaStatus } from './api';
 
 export const runScript = async () => {
     // 更新脚本运行时间
@@ -20,6 +20,11 @@ export const runScript = async () => {
             logger.error('登录失败，获取用户信息失败')
             Config.set('runStatus', false)
         }
+    }
+    // 检查cfca授权状态
+    await checkCfcaStatus()
+    if (!Config.get('runStatus')) {
+        return logger.info('cfca授权失败,暂停运行')
     }
     logger.info('脚本运行结束')
 }
