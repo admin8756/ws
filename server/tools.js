@@ -27,6 +27,13 @@ export const runScript = async () => {
         return logger.info('cfca授权失败,暂停运行')
     }
     logger.info('脚本运行结束')
+    // 测试解密可用性
+
+    // 开始定时任务
+
+    // 更新脚本运行状态
+
+    return `脚本运行结束`
 }
 
 // 尝试登录
