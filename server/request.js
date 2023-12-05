@@ -61,4 +61,5 @@ service.interceptors.response.use(
     }
 );
 
+service.commonCall = (data) => service.post(`sgcc/commonCall/${data.urlCode}`, data);
 export default service;

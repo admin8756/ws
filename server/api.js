@@ -78,7 +78,7 @@ export const getData = async (caseType, dateTime) => {
             caseType,
         },
     };
-    const { data } = await commonCallSgcc(postData);
+    const { data } = await request.commonCall(postData);
     // 如果数据存在，则返回数据，否则返回空对象
     if (data) {
         const res = JSON.parse(data);

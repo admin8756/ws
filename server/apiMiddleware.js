@@ -1,7 +1,7 @@
 // apiMiddleware.js
 import classes from './index';
 
-module.exports = function (req, res, next) {
+export default function (req, res, next) {
   const { url } = req;
   // method = 'GET || POST'
   try {

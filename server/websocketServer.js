@@ -29,3 +29,4 @@ const linkSuccessful = (ws) => {
 // 监听连接
 // wss.on('connection', linkSuccessful)
 
+export default WebS
