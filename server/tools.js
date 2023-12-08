@@ -25,14 +25,26 @@ export const runScript = async () => {
     // 检查cfca授权状态
     await checkCfcaStatus()
     if (!Config.get('runStatus')) {
-        return logger.info('cfca授权失败,暂停运行')
+        return logger.warn('cfca授权失败,运行失败')
     }
-
-    // 测试解密可用性
-
-    // 开始定时任务
-
-    // 更新脚本运行状态
+    const mode = Config.get('mode')
+    if (mode === '') {
+        return logger.warn('未设置运行模式,运行失败')
+    }
+    if (mode === 'history') {
+        // 获取历史数据
+        const startDate = Config.get('startDate')
+        const endDate = Config.get('endDate')
+        await getDisclosureInfo(startDate, endDate)
+        await getRealtimeInfo(startDate, endDate)
+    }
+    if (mode === 'realTime') {
+        // 定时器获取实时数据
+        setInterval(async () => {
+            await getDisclosureInfo()
+            await getRealtimeInfo()
+        }, 1000 * 60 * 60 * 24)
+    }
     logger.info('脚本运行结束')
 }
 
@@ -140,6 +152,7 @@ export const getOne = async (day, type) => {
     }
 }
 // 获取时间段
+
 export const getRange = async (startDate, endDate, type) => {
     const getDatesInRange = (startDate, endDate) => {
         const start = dayjs(startDate);

@@ -6,8 +6,9 @@ const fs = require('fs');
 
 // 用户类
 class User {
-  static getUser(id) {
-    return { id, name: 'John Doe' };
+  static login(passWord) {
+    const pwd = Config.get(passWord) || '123456'
+    return pwd === passWord
   }
 }
 // 日志类
