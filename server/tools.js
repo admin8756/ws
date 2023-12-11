@@ -3,6 +3,9 @@ import { logger } from '../utils/logs';
 import { Config } from '../utils/index';
 import { login, getUserInfo, checkCfcaStatus, getData } from './api';
 
+// 定时器
+let timer = null
+
 export const runScript = async () => {
     // 更新脚本运行时间
     logger.info('脚本开始运行')
@@ -25,22 +28,33 @@ export const runScript = async () => {
     // 检查cfca授权状态
     await checkCfcaStatus()
     if (!Config.get('runStatus')) {
-        return logger.warn('cfca授权失败,运行失败')
+        throw logger.warn('cfca授权失败,运行失败')
     }
     const mode = Config.get('mode')
     if (mode === '') {
-        return logger.warn('未设置运行模式,运行失败')
+        throw await logger.warn('未设置运行模式,运行失败')
+    }
+    if (mode !== 'history' && mode !== 'realTime') {
+        throw await logger.warn('运行模式不正确,运行失败')
     }
     if (mode === 'history') {
         // 获取历史数据
         const startDate = Config.get('startDate')
         const endDate = Config.get('endDate')
-        await getDisclosureInfo(startDate, endDate)
-        await getRealtimeInfo(startDate, endDate)
+        if (!startDate || !endDate) {
+            throw await logger.warn('请先设置开始日期和结束日期')
+        } else {
+            await getDisclosureInfo(startDate, endDate)
+            await getRealtimeInfo(startDate, endDate)
+        }
     }
     if (mode === 'realTime') {
+        if (timer) {
+            logger.info('定时器已存在，清除定时器')
+            clearInterval(timer)
+        }
         // 定时器获取实时数据
-        setInterval(async () => {
+        timer = setInterval(async () => {
             await getDisclosureInfo()
             await getRealtimeInfo()
         }, 1000 * 60 * 60 * 24)
@@ -57,12 +71,14 @@ export const tryLogin = async () => {
         if (data.user_token) {
             logger.info(`设置token成功:${data.user_token}`)
             Config.set('token', data.user_token)
+            Config.set('logged', false)
         } else {
-            logger.error('登录失败，获取token失败')
-            Config.set('token', '')
+            throw new Error('登录失败，获取token失败')
         }
     } catch (error) {
         logger.error(error)
+        Config.set('token', '')
+        Config.get('logged', false)
         Config.set('runStatus', false)
     }
 }
@@ -114,7 +130,7 @@ export const getRealtimeInfo = async (startDate, endDate) => {
         }
         // 开始日期是否大于结束日期
         if (startDate > endDate) {
-            return logger.error('开始日期不能大于结束日期')
+            throw logger.error('开始日期不能大于结束日期')
         }
         // 查询时间区间的信息披露
         const getRange = async (startDate, endDate) => {

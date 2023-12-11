@@ -4,7 +4,7 @@
   "authorization": false,
   "logged": false,
   "decryption": false,
-  "serviceTime": "2023-12-06T01:32:48.768Z",
+  "serviceTime": "2023-12-11T02:19:39.753Z",
   "startDate": "",
   "endDate": "",
   "passWord": "123456",
@@ -14,5 +14,5 @@
   "CFCAstatus": true,
   "mode": "",
   "ukey": "",
-  "token": "eyJhbGciOiJIUzI1NiIsIlR5cGUiOiJKd3QiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3MDE2Nzk1ODgsInVzZXJJZCI6M30.yDlpXd1pBvETAi4DnIZAxmtXfjLxItFmQco7tvNsWLo"
+  "token": ""
 }
