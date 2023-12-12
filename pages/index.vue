@@ -1,46 +1,64 @@
 <template>
   <div class="p-4">
-    <el-tabs v-model="activeName">
+    <el-tabs v-model="activeName" type="border-card">
       <el-tab-pane label="状态" name="state">
-        <el-card body-style="padding:0">
-          <div slot="header" class="flex justify-between items-center">
-            <div class="block">
-              ws链接状态: <span class="text-red-500">已连接</span>
+        <div class="flex flex-col md:flex-row w-full">
+          <el-card class="w-full md:w-1/2 mb-4 md:mr-2">
+            <div slot="header" class="flex justify-between">
+              <span>服务器状态</span>
+              <el-button type="primary" size="small">链接ws</el-button>
             </div>
-            <el-button type="primary" @click="getState">连接</el-button>
-          </div>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 overflow-auto h-[80vh]">
-            <div v-for="(item, index) in serviceList" :key="index" class="p-4 rounded shadow-md bg-white">
+            <div v-for="(item, index) in statusList" :key="index" class="md:p-4 p-2 flex justify-between rounded">
               <p class="font-bold text-lg mb-2">{{ item.title }}</p>
               <div class="text-gray-600">
-                <template v-if="item.type === 'Boolean'">
-                  <!-- Boolean type structure -->
+                <template v-if="item.type === 'Boolean' || item.type === 'Number'">
                   <div :class="statusClasses(item.value)">
                     {{ item.state[item.value ? 0 : 1] }}
                   </div>
                 </template>
-                <template v-else-if="item.type === 'Date'">
-                  <!-- Date type structure -->
+                <template v-else-if="item.type === 'Date' || item.type === 'String'">
                   <div>
                     {{ item.value }}
-                  </div>
-                </template>
-                <template v-else-if="item.type === 'String'">
-                  <!-- String type structure -->
-                  <div>
-                    {{ item.value }}
-                  </div>
-                </template>
-                <template v-else-if="item.type === 'Number'">
-                  <!-- Number type structure -->
-                  <div :class="statusClasses(item.value)">
-                    {{ item.state[item.value ? 0 : 1] }}
                   </div>
                 </template>
               </div>
             </div>
-          </div>
-        </el-card>
+          </el-card>
+          <el-card class="w-full md:w-1/2">
+            <div slot="header" class="flex justify-between">
+              <span>运行配置</span>
+              <el-button type="primary" size="small" @click="saveRun">保存并运行</el-button>
+            </div>
+            <el-form ref="serveForm" :model="formData" :rules="rules">
+              <el-form-item label="运行环境" prop="env">
+                <el-radio-group v-model="formData.env">
+                  <el-radio-button label="test">测试环境</el-radio-button>
+                  <el-radio-button label="prod">生产环境</el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="运行模式" prop="mode">
+                <el-radio-group v-model="formData.mode">
+                  <el-radio-button label="history">历史模式</el-radio-button>
+                  <el-radio-button label="realTime">实时模式</el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item v-if="formData.mode === 'history'" label="开始时间" prop="startTime">
+                <el-date-picker v-model="formData.startTime" type="date"></el-date-picker>
+              </el-form-item>
+              <el-form-item v-if="formData.mode === 'history'" label="结束时间" prop="endTime">
+                <el-date-picker v-model="formData.endTime" type="date"></el-date-picker>
+              </el-form-item>
+              <el-form-item v-if="formData.mode === 'history'" label="跳过已有数据" prop="skipDate">
+                <el-switch v-model="formData.skipDate" active-text="跳过" inactive-text="覆盖">
+                </el-switch>
+              </el-form-item>
+              <el-form-item label="心跳时间" prop="heartTime">
+                <el-input v-model="formData.heartTime" class="!w-[196px]" :default-value="1000">
+                  <template slot="append">秒/次</template></el-input>
+              </el-form-item>
+            </el-form>
+          </el-card>
+        </div>
       </el-tab-pane>
       <el-tab-pane label="日志" name="logs">
         <el-card body-style="padding:0">
@@ -68,9 +86,6 @@
           </div>
         </el-card>
       </el-tab-pane>
-      <el-tab-pane label="管理" name="third">
-        <el-button>开始运行</el-button>
-      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -89,79 +104,111 @@ export default {
       logFrom: {
         date: ""
       },
-      serviceList: [
+      statusList: [
         {
-          title: '脚本运行状态',
+          title: '登录状态',
           type: 'Boolean',
-          key: "runStatus",
-          state: ['未在运行', '正在运行'],
+          key: "isLogin",
+          state: ['未登录', '已登录'],
           value: false,
         }, {
-          title: '心跳状态',
+          title: '授权状态',
           type: 'Boolean',
-          key: "heartStatus",
-          state: ['未在运行', '正在运行'],
+          key: "isAuth",
+          state: ['未授权', '已授权'],
           value: false,
         },
         {
-          title: "授权状态",
-          type: "Boolean",
-          key: "authorization",
-          state: ["已授权", "未授权"],
-          value: false,
-        },
-        {
-          title: "登录状态",
-          type: "Boolean",
-          key: "logged",
-          state: ["已登录", "未登录"],
-          value: false,
-        },
-        {
-          title: "加解密",
+          title: "加解密工具",
           type: "Boolean",
           key: "decryption",
           state: ["可用", "不可用"],
           value: false,
-        },
-        {
+        }, {
           title: "服务运行时间",
-          type: "Date",
+          type: "String",
           key: "serviceTime",
           state: ["已运行", "未运行"],
           value: '-',
-        },
-        {
+        }, {
+          title: "心跳运行时间",
+          type: "String",
+          key: "heartTime",
+          state: ["已运行", "未运行"],
+          value: '-',
+        }, {
           title: "服务版本",
           type: "String",
           key: "version",
           state: ["已运行", "未运行"],
           value: '-',
         },
-        {
-          title: "运行环境",
-          type: "Number",
-          key: "env",
-          state: ["测试环境", "生产环境"],
-          value: -1,
-        },
-        {
-          title: "运行状态",
-          type: "Boolean",
-          key: "status",
-          state: ["正在运行", "停止运行"],
-          value: false
-        },
-        {
-          title: "运行模式",
-          type: "Number",
-          key: "mode",
-          state: ["历史模式", "即时模式"],
-          value: -1
-        },
       ],
-      serviceState: {
-
+      formData: {
+        env: -1,
+        mode: -1,
+        skipDate: false,
+        startTime: new Date(),
+        endTime: new Date() + 1000 * 60 * 60 * 24 * 7,
+        heartTime: null,
+        coverTime: new Date(),
+      },
+      rules: {
+        env: [
+          {
+            required: true, message: '请选择运行环境', trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (+value === -1) {
+                callback(new Error('请选择运行环境'))
+              } else {
+                callback()
+              }
+            }
+          }
+        ],
+        mode: [
+          {
+            required: true, message: '请选择运行模式', trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (+value === -1) {
+                callback(new Error('请选择运行模式'))
+              } else {
+                callback()
+              }
+            }
+          }
+        ],
+        startTime: [
+          {
+            required: true, message: '请选择开始时间', trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (+this.formData.mode === 0 && !value) {
+                callback(new Error('请选择开始时间'));
+              } else {
+                callback();
+              }
+            }
+          }
+        ],
+        endTime: [
+          {
+            required: true, message: '请选择结束时间', trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (+this.formData.mode === 0 && !value) {
+                callback(new Error('请选择结束时间'));
+              } else {
+                callback();
+              }
+            }
+          }
+        ],
+        heartTime: [
+          { required: true, message: '请输入心跳时间', trigger: 'blur' },
+          { pattern: /^\d+$/, message: '心跳时间必须为数字', trigger: 'blur' }
+        ],
+        coverTime: [
+          { required: true, message: '请选择指定日期数据覆盖', trigger: 'change' }
+        ]
       },
       activeName: "state"
     }
@@ -174,44 +221,75 @@ export default {
       });
     },
   },
-  async created() {
+  created() {
     this.logFrom.date = dayjs().format("YYYY-MM-DD")
-    const data = await this.$axios.get(`/api/Tools/init`)
-    console.log(data)
+    this.getState()
   },
   methods: {
     getLogs() {
       const { date } = this.logFrom
       let baseUrl = `/api/Logs/getLogList/app/`
       if (date) {
-        baseUrl = `${baseUrl}/${date}`
+        baseUrl = `${baseUrl}${date}`
       }
       this.$axios.get(baseUrl).then(res => {
         this.$axios.get(`/api/Logs/getLog/${res.data[0]}`).then(log => {
           this.list = log.data.map((k, i) => {
-            return { ...k, id: i }
+            const time = dayjs(k.time).format("YYYY-MM-DD HH:mm:ss")
+            return { ...k, id: i, time }
           })
         })
       })
     },
+    // 获取服务器配置
     getState() {
-      this.$axios.get(`/api/Tools/state`).then(res => {
-        console.log(res.data)
-        // this.serviceState = res.data
-        // this.serviceList.forEach(item => {
-        //   item.value = this.serviceState[item.key]
-        // })
+      this.$axios.get(`/api/Tools/state`).then(({ data }) => {
+        // 循环formData动态的设置formData[key]的值
+        Object.keys(this.formData).forEach(key => {
+          this.formData[key] = data[key]
+        })
+        // 循环statusList动态的设置item.value的值
       })
-    }
+    },
+    saveRun() {
+      this.$refs.serveForm.validate((valid) => {
+        if (valid) {
+          this.$axios.post('/api/Tools/saveConfig', this.formData).then(({ data }) => {
+            if (data) {
+              this.$axios.get(`/api/Tools/init`).then(res => {
+                console.log(res)
+              })
+            } else {
+              console.log('保存失败')
+            }
+          })
+        } else {
+          this.$message.warning("表单不完整")
+          return false;
+        }
+      });
+
+    },
   },
 }
 </script>
+<style>
+.el-form-item__content {
+  float: right !important;
+}
+
+.el-date-editor.el-input,
+.el-date-editor.el-input__inner {
+  width: 196px;
+}
+</style>
 <style scoped>
 .card {
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 15px;
   margin: 10px;
+  overflow: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: #fff;
   display: flex;

@@ -1,10 +1,13 @@
 {
-  "heartStatus": false,
+  "heartStatus": true,
+  "heartTime": 120,
+  "heartLastDate": "2023-12-12T07:21:35.768Z",
   "runStatus": true,
   "authorization": false,
   "logged": false,
+  "cfcaKeyImport": false,
   "decryption": false,
-  "serviceTime": "2023-12-11T02:19:39.753Z",
+  "serviceTime": "2023-12-12T07:01:35.442Z",
   "startDate": "",
   "endDate": "",
   "passWord": "123456",
@@ -12,7 +15,8 @@
   "env": "test",
   "status": "",
   "CFCAstatus": true,
-  "mode": "",
+  "skipDate": true,
+  "mode": "realTime",
   "ukey": "",
-  "token": ""
+  "token": "eyJhbGciOiJIUzI1NiIsIlR5cGUiOiJKd3QiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3MDIzNTE5ODcsInVzZXJJZCI6M30.hTjcFKqb0nesi8pMfoS58n675PDFy6_i02smDrdx2XA"
 }

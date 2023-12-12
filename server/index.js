@@ -61,6 +61,20 @@ class Tools {
   static state() {
     return Config.get()
   }
+
+  static saveConfig(configData) {
+    try {
+      for (const key in configData) {
+        if (Object.hasOwnProperty.call(configData, key)) {
+          const value = configData[key];
+          Config.set(key, value)
+        }
+      }
+      return true
+    } catch (error) {
+      return false
+    }
+  }
 }
 
 export default {

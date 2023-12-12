@@ -52,7 +52,6 @@ export const authorizeCfca = (code, loginType) => {
     });
 };
 
-
 /**
  * 根据开始日期和结束日期获取需要处理数据的日期集合
  * @param {String} sDay
@@ -63,7 +62,6 @@ export const getDays = (sDay, eDay) => {
         `spotCommon/queryRunDate?startTime=${sDay}&endTime=${eDay}`
     );
 };
-
 
 /**
  * 解密获取的实时或者日前的数据
@@ -107,7 +105,6 @@ export const getData = async (caseType, dateTime) => {
     return {};
 };
 
-
 // 判断ca授权状态
 export const checkCfcaStatus = async () => {
     logger.info("开始检查CFCA授权状态");
@@ -115,7 +112,7 @@ export const checkCfcaStatus = async () => {
         urlCode: "info",
         params: {},
     });
-    await logger[success?'info':'error'](`CFCA${success ? '已' : '未'}授权`);
+    await logger[success ? 'info' : 'error'](`CFCA${success ? '已' : '未'}授权`);
     Config.set('CFCAstatus', success)
     const res = success ? JSON.parse(data) : false;
     if (!res) {
@@ -185,12 +182,8 @@ export const encryptDayAhead = async msg => {
 }
 /**
  * 获取实时或者日前的数据
- * @param {*} data
- * @returns
  */
-export const commonCallSgcc = (data) => {
-    return request.post(`sgcc/commonCall/${data.urlCode}`, data);
-};
+export const commonCallSgcc = (data) => request.post(`sgcc/commonCall/${data.urlCode}`, data);
 
 // 现货公开新增接口
 export const spotCommonAdd = (addData) => {
@@ -215,4 +208,10 @@ export const decryptData = async (postData) => {
 export const getUserInfo = async () => {
     const { data } = await request.post('user/info', {});
     return data
+}
+
+// 检查是否导入密钥
+export const checkKeyImport = async () => {
+    const { success } = await request.get('/decode/getStatus')
+    return success || false
 }

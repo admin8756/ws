@@ -39,10 +39,13 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    'body-parser',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
   ],
-
+  bodyParser: {
+    sizeLimit: '50mb',
+  },
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
