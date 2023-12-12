@@ -1,9 +1,11 @@
 // apiMiddleware.js
 import bodyParser from 'body-parser';
 import classes from './index';
+import { httpLogger } from "../utils/logs.js";
 export default function (req, res, next) {
   bodyParser.json()(req, res, () => {
     const { url, method, body } = req;
+    httpLogger.info(`${url} ${method}`, JSON.stringify(body));
     try {
       const [className, methodName, ...args] = url.split('/').slice(1);
       if (!classes[className]) {

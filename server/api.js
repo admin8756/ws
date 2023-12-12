@@ -1,7 +1,6 @@
 import { Config, getSortKeys } from '../utils/index.js';
 import { logger } from '../utils/logs.js';
 import request from './request.js';
-import sgccPlus from './sgcc-plus.js';
 
 // 正式用户配置
 export const USER_CONFIG = {
@@ -87,8 +86,8 @@ export const getData = async (caseType, dateTime) => {
         if (res.data) {
             let { southAreaPrice, northAreaPrice } = res.data;
             const allData = await Promise.all([
-                sgccPlus.decrypt.decryptDataNoTime(southAreaPrice),
-                sgccPlus.decrypt.decryptDataNoTime(northAreaPrice),
+                decryptData(southAreaPrice),
+                decryptData(northAreaPrice),
             ]);
             southAreaPrice = getSortKeys(allData[0]);
             northAreaPrice = getSortKeys(allData[1]);
@@ -199,8 +198,8 @@ export const spotCommonAdd = (addData) => {
  * @returns {Object} 解密后的数据
  * @description: 解密接口
   */
-export const decryptData = async (postData) => {
-    const { data } = await request.post('/encipher/decrypt', { encryptData: postData.data })
+export const decryptData = async (encryptData) => {
+    const { data } = await request.post('/encipher/decrypt', { encryptData })
     if (data) {
         return JSON.parse(data)
     } else {

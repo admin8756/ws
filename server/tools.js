@@ -119,14 +119,10 @@ export const getDisclosureInfo = async (startDate, endDate) => {
         // 查询时间区间的信息披露
         return await getRange(startDate, endDate, 'dayahead')
     } else {
-        const data = []
-        // 查询D+1,如果D+1有数据，则查询D+2,如果D+2有数据，则查询D+3，以此类推，直到查询9天的数据
-        const dateList = getFutureDateArray(9)
+        const dateList = getFutureDateArray(3)
         for (let i = 0; i < dateList.length; i++) {
             const res = await getOne(dateList[i], 'dayahead')
-            if (res) {
-                data.push(res)
-            } else {
+            if (!res) {
                 break
             }
         }
@@ -153,6 +149,7 @@ export const getRealtimeInfo = async (startDate, endDate) => {
 
 // 获取单个日期
 export const getOne = async (day, type) => {
+    await logger.info(`获取单条数据，日期：${day} 类型：${type}`)
     if (!day) {
         await logger.error(`获取的日期不能为空，当前日期：${day}`)
     } else if (!dayjs(day).isValid()) {
@@ -160,10 +157,15 @@ export const getOne = async (day, type) => {
     } else {
         const date = dayjs(day).format('YYYY-MM-DD')
         const res = await getData(type, date)
-        await sendToServer({
-            date: day,
-            [`${type}`]: res
-        })
+        if (res.southAreaPrice || res.northAreaPrice) {
+            await sendToServer({
+                date: day,
+                [`${type}`]: res
+            })
+            return true
+        } else {
+            return false
+        }
     }
 }
 
@@ -180,7 +182,11 @@ export const getRange = async (startDate, endDate, type) => {
         }
         return dates;
     }
-
+    // !! 通过判断是否覆盖 检查日期是否已经存在
+    const skipDate = Config.get('skipDate')
+    if(!skipDate){
+        // 查询两个日期之间没有数据的天数
+    }
     if (!startDate || !endDate) {
         await logger.error(`获取的日期不能为空，当前日期：${startDate} - ${endDate}`)
     } else if (!dayjs(startDate).isValid() || !dayjs(endDate).isValid()) {
@@ -217,6 +223,6 @@ export const sendToServer = async (data) => {
     };
     const { success } = await spotCommonAdd(postData)
     await logger[success ? "info" : "error"](
-        `${data.date}提交${success ? "成功" : "失败"}`
+        `${data.date} 提交${success ? "成功" : "失败"}`
     );
 }
