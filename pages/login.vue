@@ -1,6 +1,6 @@
 <template>
-    <div class="flex w-full">
-        <el-card class="w-full">
+    <div class="flex flex-col md:flex-row w-full">
+        <el-card class="w-full md:w-1/2 mb-4 md:mr-2">
             <div slot="header" class="flex justify-between">
                 <span>服务器状态</span>
                 <el-button type="primary" size="small">链接ws</el-button>
@@ -35,36 +35,36 @@
                 </div>
             </div>
         </el-card>
-        <el-card class="w-full">
+        <el-card class="w-full md:w-1/2">
             <div slot="header" class="flex justify-between">
                 <span>运行配置</span>
-                <el-button type="primary" size="small">保存并运行</el-button>
+                <el-button type="primary" size="small" @click="saveRun">保存并运行</el-button>
             </div>
-            <el-form ref="form" :model="formData" label-width="100px">
-                <el-form-item label="运行环境">
-                    <el-radio-group v-model="formData.env" @input="tabEnv">
-                        <el-radio-button label="测试环境"></el-radio-button>
-                        <el-radio-button label="生产环境"></el-radio-button>
+            <el-form ref="serveForm" :model="formData" :rules="rules">
+                <el-form-item label="运行环境" prop="env">
+                    <el-radio-group v-model="formData.env">
+                        <el-radio-button :label="0">测试环境</el-radio-button>
+                        <el-radio-button :label="1">生产环境</el-radio-button>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item label="运行模式">
-                    <el-radio-group v-model="formData.mode" @input="tabMode">
-                        <el-radio-button label="历史模式"></el-radio-button>
-                        <el-radio-button label="实时模式"></el-radio-button>
+                <el-form-item label="运行模式" prop="mode">
+                    <el-radio-group v-model="formData.mode">
+                        <el-radio-button :label="0">历史模式</el-radio-button>
+                        <el-radio-button :label="1">实时模式</el-radio-button>
                     </el-radio-group>
                 </el-form-item>
-                <el-form-item v-if="formData.mode === 0" label="开始时间">
-                    <el-date-picker v-model="formData.startTime" type="date" :default-value="new Date()"></el-date-picker>
+                <el-form-item v-if="+formData.mode === 0" label="开始时间" prop="startTime">
+                    <el-date-picker v-model="formData.startTime" type="date"></el-date-picker>
                 </el-form-item>
-                <el-form-item v-if="formData.mode === 0" label="结束时间">
-                    <el-date-picker v-model="formData.endTime" type="date"
-                        :default-value="new Date() + 1000 * 60 * 60 * 24 * 7"></el-date-picker>
+                <el-form-item v-if="+formData.mode === 0" label="结束时间" prop="endTime">
+                    <el-date-picker v-model="formData.endTime" type="date"></el-date-picker>
                 </el-form-item>
-                <el-form-item label="心跳时间">
-                    <el-input v-model="formData.heartTime" :default-value="1000"></el-input>
+                <el-form-item label="心跳时间" prop="heartTime">
+                    <el-input v-model="formData.heartTime" class="!w-[196px]" :default-value="1000">
+                        <template slot="append">毫秒/次</template></el-input>
                 </el-form-item>
-                <el-form-item label="指定日期数据覆盖">
-                    <el-date-picker v-model="formData.coverTime" type="date" :default-value="new Date()"></el-date-picker>
+                <el-form-item label="指定日期数据覆盖" label-width="220" prop="coverTime">
+                    <el-date-picker v-model="formData.coverTime" type="date"></el-date-picker>
                 </el-form-item>
             </el-form>
         </el-card>
@@ -115,12 +115,6 @@ export default {
                     value: '-',
                 },
             ],
-            // 可以控制的服务
-            // 运行环境 测试环境 生产环境
-            // 运行模式 历史 或实时
-            // 如果打开历史模式。则需要选择开始时间，结束时间
-            // 可以配置心跳时间
-            // 指定日期数据覆盖。
             formData: {
                 env: -1,
                 mode: -1,
@@ -128,6 +122,63 @@ export default {
                 endTime: new Date() + 1000 * 60 * 60 * 24 * 7,
                 heartTime: 1000,
                 coverTime: new Date(),
+            },
+            rules: {
+                env: [
+                    {
+                        required: true, message: '请选择运行环境', trigger: 'change',
+                        validator: (rule, value, callback) => {
+                            if (+value === -1) {
+                                callback(new Error('请选择运行环境'))
+                            } else {
+                                callback()
+                            }
+                        }
+                    }
+                ],
+                mode: [
+                    {
+                        required: true, message: '请选择运行模式', trigger: 'change',
+                        validator: (rule, value, callback) => {
+                            if (+value === -1) {
+                                callback(new Error('请选择运行模式'))
+                            } else {
+                                callback()
+                            }
+                        }
+                    }
+                ],
+                startTime: [
+                    {
+                        required: true, message: '请选择开始时间', trigger: 'change',
+                        validator: (rule, value, callback) => {
+                            if (+this.formData.mode === 0 && !value) {
+                                callback(new Error('请选择开始时间'));
+                            } else {
+                                callback();
+                            }
+                        }
+                    }
+                ],
+                endTime: [
+                    {
+                        required: true, message: '请选择结束时间', trigger: 'change',
+                        validator: (rule, value, callback) => {
+                            if (+this.formData.mode === 0 && !value) {
+                                callback(new Error('请选择结束时间'));
+                            } else {
+                                callback();
+                            }
+                        }
+                    }
+                ],
+                heartTime: [
+                    { required: true, message: '请输入心跳时间', trigger: 'blur' },
+                    { pattern: /^\d+$/, message: '心跳时间必须为数字', trigger: 'blur' }
+                ],
+                coverTime: [
+                    { required: true, message: '请选择指定日期数据覆盖', trigger: 'change' }
+                ]
             },
             service: {}
         };
@@ -141,14 +192,25 @@ export default {
         },
     },
     methods: {
-        tabMode: function (val) {
+        saveRun() {
+            this.$refs.serveForm.validate((valid) => {
+                if (valid) {
+                    console.log(this.formData)
+                } else {
+                    this.$message.warning("表单不完整")
+                    return false;
+                }
+            });
+
+        },
+        tabMode(val) {
             if (val === '历史模式') {
                 this.formData.mode = 0;
             } else {
                 this.formData.mode = 1;
             }
         },
-        tabEnv: function (val) {
+        tabEnv(val) {
             if (val === '测试环境') {
                 this.formData.env = 0;
             } else {
@@ -163,5 +225,8 @@ export default {
 <style>
 .el-form-item__content {
     float: right !important;
+}
+.el-date-editor.el-input, .el-date-editor.el-input__inner{
+    width: 196px;
 }
 </style>
