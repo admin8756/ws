@@ -1,5 +1,5 @@
 import { Config, formatLog } from '../utils/index';
-import { runScript } from './tools.js';
+import { queryScript, runScript } from './tools.js';
 
 // index.js
 const fs = require('fs');
@@ -56,6 +56,10 @@ class Logs {
 class Tools {
   static init() {
     return runScript()
+  }
+
+  static timerStatus() {
+    return queryScript
   }
 
   static state() {

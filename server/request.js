@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Config } from '../utils/index.js';
-import { logger } from "../utils/logs.js";
+import { httpLogger, logger } from "../utils/logs.js";
 
 const TEST_ENV = 'https://test.linkcloud-energy.com/prod-api/';
 const PROD_ENV = 'https://sys.linkcloud-energy.com/prod-api/';
@@ -36,7 +36,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
     (response) => {
         const { config, data } = response;
-        logger.info(`${config.baseURL}${config.url}`);
+        httpLogger.info(`${config.baseURL}${config.url}`, JSON.stringify(data));
         if (data && data.code !== 0) {
             if (data.msg === "token is null") {
                 // 处理登录失效
@@ -56,7 +56,7 @@ service.interceptors.response.use(
                 error: STATUS_CODE[status] || '未知',
                 responseURL: config.url,
             };
-            logger.error(`调用${config.url}失败 【${status}】${errorLog.error} ${data.error}`);
+            httpLogger.error(`调用${config.url}失败 【${status}】${errorLog.error} ${data.error}`);
         }
     }
 );

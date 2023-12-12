@@ -1,25 +1,25 @@
 {
   "heartStatus": true,
   "heartTime": "10",
-  "heartLastDate": "2023-12-12T08:26:23.519Z",
+  "heartLastDate": "2023-12-12T09:23:19.119Z",
   "runStatus": true,
   "authorization": false,
-  "logged": false,
+  "logged": true,
   "cfcaKeyImport": true,
   "decryption": false,
-  "serviceTime": "2023-12-12T08:22:12.847Z",
+  "serviceTime": "2023-12-12T09:22:08.793Z",
   "startDate": "",
   "endDate": "",
   "passWord": "123456",
   "version": "1.0.0",
   "env": "test",
-  "status": "",
   "CFCAstatus": true,
   "skipDate": true,
   "mode": "realTime",
   "ukey": {
-    "time": 1702369584139,
+    "time": 1702372999848,
     "ukey": "CN=PMOS02@苏州市绿捷能售电有限公司@Z91320508MA1NBHHN2W@1,OU=Organizational-1,OU=PMOS02,O=OCA1SM2,C=CN"
   },
-  "token": "eyJhbGciOiJIUzI1NiIsIlR5cGUiOiJKd3QiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3MDIzNTE5ODcsInVzZXJJZCI6M30.hTjcFKqb0nesi8pMfoS58n675PDFy6_i02smDrdx2XA"
+  "token": "eyJhbGciOiJIUzI1NiIsIlR5cGUiOiJKd3QiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3MDIzNTE5ODcsInVzZXJJZCI6M30.hTjcFKqb0nesi8pMfoS58n675PDFy6_i02smDrdx2XA",
+  "startTime": "2022-03-03T16:00:00.000Z"
 }

@@ -6,7 +6,7 @@ log4js.configure({
             type: "dateFile",
             filename: "logs/app",
             maxLogSize: 10485760,
-            backups: 3,
+            backups: 5,
             pattern: "yyyy-MM-dd.log",
             alwaysIncludePattern: true,
         },
@@ -33,5 +33,6 @@ log4js.configure({
 });
 
 const logger = log4js.getLogger("app");
+const httpLogger = log4js.getLogger("http");
 
-export { logger };
+export { logger, httpLogger };

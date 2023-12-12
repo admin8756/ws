@@ -13,11 +13,14 @@
               <div class="text-gray-600">
                 <template v-if="item.type === 'Boolean' || item.type === 'Number'">
                   <div :class="statusClasses(item.value)">
-                    {{ item.state[item.value ? 0 : 1] }}
+                    {{ item.state[item.value ? 1 : 0] }}
                   </div>
                 </template>
                 <template v-else-if="item.type === 'Date' || item.type === 'String'">
-                  <div>
+                  <span v-if="item.format">
+                    {{ item.format(item.value) }}
+                  </span>
+                  <div v-else>
                     {{ item.value }}
                   </div>
                 </template>
@@ -93,6 +96,10 @@
 <script>
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime)
+dayjs.locale('zh-cn')
 export default {
   components: {
     DynamicScroller,
@@ -108,13 +115,13 @@ export default {
         {
           title: '登录状态',
           type: 'Boolean',
-          key: "isLogin",
+          key: "logged",
           state: ['未登录', '已登录'],
           value: false,
         }, {
           title: '授权状态',
           type: 'Boolean',
-          key: "isAuth",
+          key: "CFCAstatus",
           state: ['未授权', '已授权'],
           value: false,
         },
@@ -122,19 +129,25 @@ export default {
           title: "密钥是否导入",
           type: "Boolean",
           key: "cfcaKeyImport",
-          state: ["导入", "未导入"],
+          state: ["未导入", "已导入"],
           value: false,
         }, {
           title: "服务运行时间",
           type: "String",
           key: "serviceTime",
           state: ["已运行", "未运行"],
+          format: (value) => {
+            return dayjs(value).format("YYYY-MM-DD HH:mm:ss")
+          },
           value: '-',
         }, {
           title: "心跳最后运行时间",
           type: "String",
           key: "heartLastDate",
           state: ["已运行", "未运行"],
+          format: (value) => {
+            return dayjs(value).fromNow();
+          },
           value: '-',
         }, {
           title: "服务版本",
@@ -182,7 +195,7 @@ export default {
           {
             required: true, message: '请选择开始时间', trigger: 'change',
             validator: (rule, value, callback) => {
-              if (+this.formData.mode === 0 && !value) {
+              if (+this.formData.mode === 'history' && !value) {
                 callback(new Error('请选择开始时间'));
               } else {
                 callback();
@@ -194,7 +207,7 @@ export default {
           {
             required: true, message: '请选择结束时间', trigger: 'change',
             validator: (rule, value, callback) => {
-              if (+this.formData.mode === 0 && !value) {
+              if (+this.formData.mode === 'history' && !value) {
                 callback(new Error('请选择结束时间'));
               } else {
                 callback();
@@ -206,9 +219,6 @@ export default {
           { required: true, message: '请输入心跳时间', trigger: 'blur' },
           { pattern: /^\d+$/, message: '心跳时间必须为数字', trigger: 'blur' }
         ],
-        coverTime: [
-          { required: true, message: '请选择指定日期数据覆盖', trigger: 'change' }
-        ]
       },
       activeName: "state"
     }
@@ -260,10 +270,10 @@ export default {
           this.$axios.post('/api/Tools/saveConfig', this.formData).then(({ data }) => {
             if (data) {
               this.$axios.get(`/api/Tools/init`).then(res => {
-                console.log(res)
+                this.$message.success('发送成功')
               })
             } else {
-              console.log('保存失败')
+              this.$message.warning('保存失败')
             }
           })
         } else {

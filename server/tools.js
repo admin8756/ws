@@ -93,7 +93,7 @@ export const tryLogin = async () => {
         if (data.user_token) {
             logger.info(`设置token成功:${data.user_token}`)
             Config.set('token', data.user_token)
-            Config.set('logged', false)
+            Config.set('logged', true)
         } else {
             throw new Error('登录失败，获取token失败')
         }
@@ -206,10 +206,14 @@ export const sendToServer = async (data) => {
     logger.info(JSON.stringify(data))
     const postData = {
         runDate: data.date,
-        voidanceSouth: data.realtime.southAreaPrice || [], // 江南实时出清价
-        voidanceNorth: data.realtime.northAreaPrice || [], // 江北实时出清价
-        presentSouth: data.dayahead.southAreaPrice || [], // 江南日前出清价
-        presentNorth: data.dayahead.northAreaPrice || [], // 江北日前出清价
+        // 江南实时出清价
+        voidanceSouth: data && data.realtime && data.realtime.southAreaPrice || [],
+        // 江北实时出清价
+        voidanceNorth: data && data.realtime && data.realtime.northAreaPrice || [],
+        // 江南日前出清价
+        presentSouth: data && data.dayahead && data.dayahead.southAreaPrice || [],
+        // 江北日前出清价
+        presentNorth: data && data.dayahead && data.dayahead.northAreaPrice || [],
     };
     const { success } = await spotCommonAdd(postData)
     await logger[success ? "info" : "error"](
