@@ -119,10 +119,10 @@ export default {
           value: false,
         },
         {
-          title: "加解密工具",
+          title: "密钥是否导入",
           type: "Boolean",
-          key: "decryption",
-          state: ["可用", "不可用"],
+          key: "cfcaKeyImport",
+          state: ["导入", "未导入"],
           value: false,
         }, {
           title: "服务运行时间",
@@ -131,9 +131,9 @@ export default {
           state: ["已运行", "未运行"],
           value: '-',
         }, {
-          title: "心跳运行时间",
+          title: "心跳最后运行时间",
           type: "String",
-          key: "heartTime",
+          key: "heartLastDate",
           state: ["已运行", "未运行"],
           value: '-',
         }, {
@@ -249,6 +249,9 @@ export default {
           this.formData[key] = data[key]
         })
         // 循环statusList动态的设置item.value的值
+        this.statusList.forEach(item => {
+          item.value = data[item.key]
+        })
       })
     },
     saveRun() {

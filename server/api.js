@@ -69,6 +69,10 @@ export const getDays = (sDay, eDay) => {
  * @param {String} dateTime
  */
 export const getData = async (caseType, dateTime) => {
+    if (!caseType || !dateTime) {
+        await logger.error(`参数错误:caseType:${caseType},dateTime:${dateTime}`)
+        throw new Error('参数错误')
+    }
     const postData = {
         urlCode: "loadUserPlanPriceDecodeNew",
         params: {

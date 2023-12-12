@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { logger } from '../utils/logs';
-import { Config } from '../utils/index';
-import { login, getUserInfo, checkCfcaStatus, getData, checkKeyImport } from './api';
+import { Config, getFutureDateArray } from '../utils/index';
+import { login, getUserInfo, checkCfcaStatus, getData, checkKeyImport, spotCommonAdd } from './api';
 
 // 定时器
 let timer = null
@@ -31,11 +31,13 @@ export const runScript = async () => {
     if (!Config.get('runStatus')) {
         throw await logger.warn('CFCA授权失败,运行失败')
     }
+
     // 检查密钥是否导入
     await checkCFCAKey()
     if (!Config.get('cfcaKeyImport')) {
         throw await logger.warn('CFCA密钥未导入，运行失败')
     }
+
     const mode = Config.get('mode')
     if (mode === '' || mode === -1) {
         throw await logger.warn('未设置运行模式,运行失败')
@@ -115,24 +117,13 @@ export const getDisclosureInfo = async (startDate, endDate) => {
             return logger.error('开始日期不能大于结束日期')
         }
         // 查询时间区间的信息披露
-        const getRange = async (startDate, endDate) => {
-            const data = []
-            for (let i = startDate; i <= endDate; i++) {
-                const res = await getOne(i, 'dayahead')
-                if (res) {
-                    data.push(res)
-                } else {
-                    break
-                }
-            }
-            return data
-        }
-        return await getRange(startDate, endDate)
+        return await getRange(startDate, endDate, 'dayahead')
     } else {
         const data = []
         // 查询D+1,如果D+1有数据，则查询D+2,如果D+2有数据，则查询D+3，以此类推，直到查询9天的数据
-        for (let i = 0; i < 9; i++) {
-            const res = await getOne(dayjs().add(i, 'day').format('YYYY-MM-DD'))
+        const dateList = getFutureDateArray(9)
+        for (let i = 0; i < dateList.length; i++) {
+            const res = await getOne(dateList[i], 'dayahead')
             if (res) {
                 data.push(res)
             } else {
@@ -154,26 +145,9 @@ export const getRealtimeInfo = async (startDate, endDate) => {
             throw logger.error('开始日期不能大于结束日期')
         }
         // 查询时间区间的信息披露
-        const getRange = async (startDate, endDate) => {
-            const data = []
-            for (let i = startDate; i <= endDate; i++) {
-                const res = await getOne(i, 'realtime')
-                data.push(res)
-            }
-            return data
-        }
         return await getRange(startDate, endDate)
     } else {
-        const data = []
-        // 查询D+1,如果D+1有数据，则查询D+2,如果D+2有数据，则查询D+3，以此类推，直到查询9天的数据
-        for (let i = 0; i < 9; i++) {
-            const res = await getOne(dayjs().add(i, 'day').format('YYYY-MM-DD'))
-            if (res) {
-                data.push(res)
-            } else {
-                break
-            }
-        }
+        await getOne(dayjs(new Date()).format('YYYY-MM-DD'), 'realtime')
     }
 }
 
@@ -185,7 +159,11 @@ export const getOne = async (day, type) => {
         await logger.error(`获取的日期不合法，当前日期：${day}`)
     } else {
         const date = dayjs(day).format('YYYY-MM-DD')
-        return await getData(date, type)
+        const res = await getData(type, date)
+        await sendToServer({
+            date: day,
+            [`${type}`]: res
+        })
     }
 }
 
@@ -211,9 +189,8 @@ export const getRange = async (startDate, endDate, type) => {
         const datesInRange = getDatesInRange(startDate, endDate);
         for (let i = 0; i < datesInRange.length; i++) {
             const date = datesInRange[i];
-            await getData(date, type)
+            await getOne(date, type)
         }
-        // 利用dayjs循环获得start 到 end 每一天的日期
     }
 }
 
@@ -223,3 +200,19 @@ export const checkCFCAKey = async () => {
     await logger[cfcaKey ? 'info' : 'error'](cfcaKey ? '现货密钥已导入' : '现货密钥没有导入')
     Config.set('cfcaKeyImport', cfcaKey)
 };
+
+// 将处理好的数据发送给后端
+export const sendToServer = async (data) => {
+    logger.info(JSON.stringify(data))
+    const postData = {
+        runDate: data.date,
+        voidanceSouth: data.realtime.southAreaPrice || [], // 江南实时出清价
+        voidanceNorth: data.realtime.northAreaPrice || [], // 江北实时出清价
+        presentSouth: data.dayahead.southAreaPrice || [], // 江南日前出清价
+        presentNorth: data.dayahead.northAreaPrice || [], // 江北日前出清价
+    };
+    const { success } = await spotCommonAdd(postData)
+    await logger[success ? "info" : "error"](
+        `${data.date}提交${success ? "成功" : "失败"}`
+    );
+}

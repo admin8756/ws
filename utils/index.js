@@ -73,7 +73,7 @@ export const TIME_STYLE = {
 }
 
 /**
- * @name 停止每次没有意义的格式化
+ * @name getTimes 停止每次没有意义的格式化
  * @param {*} timeStyle 请从config里的TIME_STYLE读取
  * @param {*} t 要格式化的时间。或者空则返回现在的时间
  * @returns 格式化好的时间
@@ -110,7 +110,7 @@ export const objToArr = (obj = {}) => {
 }
 
 /**
- * @name 传入一个数组，传入要保留的小数点位数
+ * @name getArrayFixed 传入一个数组，传入要保留的小数点位数
  * @param {Array} arr 数组
  * @param {Number} num 保留的小数点位数
  * @returns {Array} 返回一个新的数组
@@ -129,4 +129,21 @@ export const getArrayFixed = (arr = [], num = 4) => {
             }
         })
     }
+}
+
+// 传入一个开始日期，结束日期。返回日期的数组
+export const getDateArray = (startDate, endDate) => {
+    const start = dayjs(startDate);
+    const end = dayjs(endDate);
+    const diff = end.diff(start, 'day');
+    return Array.from({ length: diff + 1 }, (_, index) =>
+        start.add(index, 'day').format('YYYY-MM-DD')
+    );
+}
+// 获取未来指定天数的数组
+export const getFutureDateArray = (num) => {
+    const start = dayjs();
+    return Array.from({ length: num }, (_, index) =>
+        start.add(index, 'day').format('YYYY-MM-DD')
+    );
 }
