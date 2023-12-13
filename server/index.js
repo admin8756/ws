@@ -1,5 +1,5 @@
 import { Config, formatLog } from '../utils/index';
-import { queryScript, runScript } from './tools.js';
+import { closeScript, queryScript, runScript } from './tools.js';
 
 // index.js
 const fs = require('fs');
@@ -91,7 +91,12 @@ class Tools {
       return false
     }
   }
+
+  static cancelTimer() {
+    return closeScript()
+  }
 }
+
 
 export default {
   User,

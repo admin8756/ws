@@ -6,7 +6,7 @@
           <el-card class="w-full md:w-1/2 mb-4 md:mr-2">
             <div slot="header" class="flex justify-between">
               <span>服务器状态</span>
-              <el-button type="primary" size="small">链接ws</el-button>
+              <el-button type="primary" size="small" @click="connectWs">链接ws</el-button>
             </div>
             <div v-for="(item, index) in statusList" :key="index" class="md:p-4 p-2 flex justify-between rounded">
               <p class="font-bold text-lg mb-2">{{ item.title }}</p>
@@ -291,6 +291,43 @@ export default {
         }
       });
 
+    },
+    // 链接ws
+    connectWs() {
+      // 判断是否是浏览器环境
+      if (process.browser) {
+        this.socket = new WebSocket('ws://localhost:12591')
+      } else {
+        this.socket = {}
+      }
+      this.socket.onopen = (event) => {
+        this.$message.success('WebSocket连接已打开')
+      }
+      this.socket.onmessage = (event) => {
+        let { data } = event
+        data = JSON.parse(data)
+        this.statusList.forEach(item => {
+          item.value = data[item.key]
+        })
+      }
+      this.socket.onerror = (event) => {
+        this.$msgbox({
+          title: '错误',
+          message: 'WebSocket连接发生错误',
+          type: 'error',
+          showCancelButton: false,
+          confirmButtonText: '确定',
+        })
+      }
+      this.socket.onclose = (event) => {
+        this.$message.warning('WebSocket连接已关闭')
+      }
+    },
+    sendMessage() {
+      const message = this.messageInput
+      this.sentMessages.push(message)
+      this.socket.send(message)
+      this.messageInput = ''
     },
   },
 }
