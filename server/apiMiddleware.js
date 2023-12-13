@@ -1,7 +1,7 @@
 // apiMiddleware.js
 import bodyParser from 'body-parser';
-import classes from './index';
 import { httpLogger } from "../utils/logs.js";
+import classes from './index';
 export default function (req, res, next) {
   bodyParser.json()(req, res, () => {
     const { url, method, body } = req;
