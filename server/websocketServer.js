@@ -13,7 +13,7 @@ const linkSuccessful = (ws) => {
   ws.on('message', receiveMessage)
   // ws.send('ws链接成功')
   // 监听config变化
-  Config.onChange((config) => {
+  Config.watch((config) => {
     ws.send(`${JSON.stringify(config)}`)
   })
   // Config.on('change', (key, value) => {

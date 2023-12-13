@@ -56,7 +56,7 @@
                 </el-switch>
               </el-form-item>
               <el-form-item v-if="formData.mode === 'realTime'" label="心跳时间" prop="heartTime">
-                <el-input v-model="formData.heartTime" class="!w-[196px]" :default-value="1000">
+                <el-input v-model="formData.heartTime" class="!w-[196px]">
                   <template slot="append">秒/次</template></el-input>
               </el-form-item>
             </el-form>

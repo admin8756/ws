@@ -24,11 +24,6 @@ export const formatLog = (logs) => {
 const jsonPath = './utils/config.json'
 // 生成一个代理对象，提供一个读取方法，返回config.json的配置。监听改变如果改变了。更新config.json文件
 export const Config = {
-  onChange(callback) {
-    fs.watchFile(jsonPath, { interval: 1000 }, () => {
-      callback(this.get());
-    })
-  },
   get(key) {
     // 判断文件是否存在
     if (!fs.existsSync(jsonPath)) {

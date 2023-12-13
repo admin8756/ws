@@ -7,70 +7,77 @@ import { login, getUserInfo, checkCfcaStatus, getData, checkKeyImport, spotCommo
 let timer = null
 
 export const runScript = async () => {
-  if (timer) {
-    logger.info('定时器已存在，清除定时器')
-    clearInterval(timer)
-  }
-  // 更新脚本运行时间
-  logger.info('脚本开始运行')
-  Config.set('serviceTime', new Date())
-  // 更新脚本运行状态
-  Config.set('runStatus', true)
-  // 检查token是否存在
-  if (!Config.get('token')) {
-    await tryLogin()
-  } else {
-    const userInfo = await getUserInfo()
-    if (userInfo.userName) {
-      logger.info(`登录成功，用户名：${userInfo.userName}`)
-    } else {
+  try {
+    if (timer) {
+      logger.info('定时器已存在，清除定时器')
+      clearInterval(timer)
+    }
+    logger.info('脚本开始运行')
+    Config.set('serviceTime', new Date())
+    // 更新脚本运行状态
+    Config.set('runStatus', true)
+    logger.info('检查token是否存在')
+    if (!Config.get('token')) {
       await tryLogin()
-      logger.error('登录失败，获取用户信息失败')
-      Config.set('runStatus', false)
-    }
-  }
-  // 检查cfca授权状态
-  await checkCfcaStatus()
-
-  if (!Config.get('runStatus')) {
-    throw await logger.warn('CFCA授权失败,运行失败')
-  }
-
-  // 检查密钥是否导入
-  await checkCFCAKey()
-  if (!Config.get('cfcaKeyImport')) {
-    throw await logger.warn('CFCA密钥未导入，运行失败')
-  }
-
-  const mode = Config.get('mode')
-  if (mode === '' || mode === -1) {
-    throw await logger.warn('未设置运行模式,运行失败')
-  }
-  if (mode !== 'history' && mode !== 'realTime') {
-    throw await logger.warn('运行模式不正确,运行失败')
-  }
-  if (mode === 'history') {
-    // 获取历史数据
-    const startDate = Config.get('startDate')
-    const endDate = Config.get('endDate')
-    if (!startDate || !endDate) {
-      throw await logger.warn('请先设置开始日期和结束日期')
     } else {
-      getDisclosureInfo(startDate, endDate)
-      getRealtimeInfo(startDate, endDate)
+      const userInfo = await getUserInfo()
+      if (userInfo.userName) {
+        logger.info(`登录成功，用户名：${userInfo.userName}`)
+      } else {
+        await tryLogin()
+        logger.error('登录失败，获取用户信息失败')
+        Config.set('runStatus', false)
+      }
     }
-  }
-  if (mode === 'realTime') {
-    // 定时器获取实时数据
-    timer = setInterval(async () => {
-      await logger.info("成功心跳一次")
-      Config.set('heartStatus', true)
-      Config.set('heartLastDate', new Date())
+    logger.info('检查CFCA授权状态')
+    await checkCfcaStatus()
+
+    if (!Config.get('runStatus')) {
+      throw await logger.warn('CFCA授权失败,运行失败')
+    }
+
+    logger.info('检查CFCA密钥是否导入')
+    await checkCFCAKey()
+    if (!Config.get('cfcaKeyImport')) {
+      throw await logger.warn('CFCA密钥未导入，运行失败')
+    }
+
+    logger.info('脚本运行环境检查完毕，准备运行脚本')
+    const mode = Config.get('mode')
+    if (mode === '' || mode === -1) {
+      throw await logger.warn('未设置运行模式,运行失败')
+    }
+    if (mode !== 'history' && mode !== 'realTime') {
+      throw await logger.warn('运行模式不正确,运行失败')
+    }
+    if (mode === 'history') {
+      // 获取历史数据
+      const startDate = Config.get('startDate')
+      const endDate = Config.get('endDate')
+      if (!startDate || !endDate) {
+        throw await logger.warn('请先设置开始日期和结束日期')
+      } else {
+        getDisclosureInfo(startDate, endDate)
+        getRealtimeInfo(startDate, endDate)
+      }
+    }
+    if (mode === 'realTime') {
       getDisclosureInfo()
       getRealtimeInfo()
-    }, Config.get('heartTime') * 1000)
+      // 定时器获取实时数据
+      timer = setInterval(async () => {
+        await logger.info("成功心跳一次")
+        Config.set('heartStatus', true)
+        Config.set('heartLastDate', new Date())
+        getDisclosureInfo()
+        getRealtimeInfo()
+      }, Config.get('heartTime') * 1000)
+    }
+    logger.info('脚本运行结束')
+  } catch (error) {
+    await logger.error(`脚本运行失败：${JSON.stringify(error)}`)
+    return '脚本运行失败'
   }
-  logger.info('脚本运行结束')
 }
 
 // 查询定时器是否在运行
