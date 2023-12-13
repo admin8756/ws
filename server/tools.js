@@ -1,12 +1,16 @@
 import dayjs from 'dayjs';
 import { logger } from '../utils/logs';
-import { Config, getFutureDateArray } from '../utils/index';
-import { login, getUserInfo, checkCfcaStatus, getData, checkKeyImport, spotCommonAdd } from './api';
+import { Config, getDateArray, getFutureDateArray } from '../utils/index';
+import { login, getUserInfo, checkCfcaStatus, getData, checkKeyImport, spotCommonAdd, getDays } from './api';
 
 // 定时器
 let timer = null
 
 export const runScript = async () => {
+    if (timer) {
+        logger.info('定时器已存在，清除定时器')
+        clearInterval(timer)
+    }
     // 更新脚本运行时间
     logger.info('脚本开始运行')
     Config.set('serviceTime', new Date())
@@ -57,10 +61,6 @@ export const runScript = async () => {
         }
     }
     if (mode === 'realTime') {
-        if (timer) {
-            logger.info('定时器已存在，清除定时器')
-            clearInterval(timer)
-        }
         // 定时器获取实时数据
         timer = setInterval(async () => {
             logger.info("成功心跳一次")
@@ -141,7 +141,7 @@ export const getRealtimeInfo = async (startDate, endDate) => {
             throw logger.error('开始日期不能大于结束日期')
         }
         // 查询时间区间的信息披露
-        return await getRange(startDate, endDate)
+        return await getRange(startDate, endDate,'realtime')
     } else {
         await getOne(dayjs(new Date()).format('YYYY-MM-DD'), 'realtime')
     }
@@ -171,28 +171,24 @@ export const getOne = async (day, type) => {
 
 // 获取时间段
 export const getRange = async (startDate, endDate, type) => {
-    const getDatesInRange = (startDate, endDate) => {
-        const start = dayjs(startDate);
-        const end = dayjs(endDate);
-        const dates = [];
-        let current = start;
-        while (current.isSameOrBefore(end)) {
-            dates.push(current.format('YYYY-MM-DD'));
-            current = current.add(1, 'day');
-        }
-        return dates;
-    }
-    // !! 通过判断是否覆盖 检查日期是否已经存在
-    const skipDate = Config.get('skipDate')
-    if(!skipDate){
-        // 查询两个日期之间没有数据的天数
-    }
     if (!startDate || !endDate) {
         await logger.error(`获取的日期不能为空，当前日期：${startDate} - ${endDate}`)
     } else if (!dayjs(startDate).isValid() || !dayjs(endDate).isValid()) {
         await logger.error(`获取的日期不合法，当前日期：${startDate} - ${endDate}`)
     } else {
-        const datesInRange = getDatesInRange(startDate, endDate);
+        // !! 通过判断是否覆盖 检查日期是否已经存在
+        let datesInRange = []
+        const skipDate = Config.get('skipDate')
+        if (!skipDate) {
+            // 查询两个日期之间没有数据的天数
+            logger.info(`补全数据模式，将会补全服务器中${startDate} - ${endDate}的${type}数据`)
+            datesInRange = await getDays(startDate, endDate)
+            logger.info(`补全日期： ${JSON.stringify(datesInRange)}`)
+        } else {
+            logger.info(`覆盖数据模式，将会覆盖服务器中${startDate} - ${endDate}的${type}数据`)
+            datesInRange = getDateArray(startDate, endDate)
+            logger.info(`覆盖日期： ${JSON.stringify(datesInRange)}`)
+        }
         for (let i = 0; i < datesInRange.length; i++) {
             const date = datesInRange[i];
             await getOne(date, type)
@@ -226,3 +222,4 @@ export const sendToServer = async (data) => {
         `${data.date} 提交${success ? "成功" : "失败"}`
     );
 }
+

@@ -46,16 +46,16 @@
                 </el-radio-group>
               </el-form-item>
               <el-form-item v-if="formData.mode === 'history'" label="开始时间" prop="startTime">
-                <el-date-picker v-model="formData.startTime" type="date"></el-date-picker>
+                <el-date-picker v-model="formData.startDate" type="date"></el-date-picker>
               </el-form-item>
               <el-form-item v-if="formData.mode === 'history'" label="结束时间" prop="endTime">
-                <el-date-picker v-model="formData.endTime" type="date"></el-date-picker>
+                <el-date-picker v-model="formData.endDate" type="date"></el-date-picker>
               </el-form-item>
               <el-form-item v-if="formData.mode === 'history'" label="跳过已有数据" prop="skipDate">
                 <el-switch v-model="formData.skipDate" active-text="跳过" inactive-text="覆盖">
                 </el-switch>
               </el-form-item>
-              <el-form-item label="心跳时间" prop="heartTime">
+              <el-form-item v-if="formData.mode === 'realTime'" label="心跳时间" prop="heartTime">
                 <el-input v-model="formData.heartTime" class="!w-[196px]" :default-value="1000">
                   <template slot="append">秒/次</template></el-input>
               </el-form-item>
@@ -161,8 +161,8 @@ export default {
         env: -1,
         mode: -1,
         skipDate: false,
-        startTime: new Date(),
-        endTime: new Date() + 1000 * 60 * 60 * 24 * 7,
+        startDate: new Date(),
+        endDate: new Date() + 1000 * 60 * 60 * 24 * 7,
         heartTime: null,
         coverTime: new Date(),
       },
@@ -216,7 +216,16 @@ export default {
           }
         ],
         heartTime: [
-          { required: true, message: '请输入心跳时间', trigger: 'blur' },
+          {
+            required: true, message: '请输入心跳时间', trigger: 'blur',
+            validator: (rule, value, callback) => {
+              if (+this.formData.mode === 'realTime' && !value) {
+                callback(new Error('请输入心跳间隔时间'));
+              } else {
+                callback();
+              }
+            }
+          },
           { pattern: /^\d+$/, message: '心跳时间必须为数字', trigger: 'blur' }
         ],
       },
