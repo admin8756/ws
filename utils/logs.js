@@ -9,6 +9,10 @@ log4js.configure({
             backups: 5,
             pattern: "yyyy-MM-dd.log",
             alwaysIncludePattern: true,
+            layout: {
+                type: "pattern",
+                pattern: "[%d{yyyy-MM-dd hh:mm:ss}] [%p] %m",
+            },
         },
         console: {
             type: "console",
@@ -18,6 +22,10 @@ log4js.configure({
             filename: "logs/access.log",
             maxLogSize: 10485760,
             backups: 3,
+            layout: {
+                type: "pattern",
+                pattern: "[%d{yyyy-MM-dd hh:mm:ss}] [%p] %m",
+            },
         },
     },
     categories: {
