@@ -25,10 +25,13 @@ const service = axios.create({
     baseURL,
     timeout: 120 * 10000,
 });
+// 在发送请求前。拦截请求。记录请求参数日志
 
 service.interceptors.request.use(
     (config) => {
         config.headers.user_token = Config.get('token') || '';
+        config.headers['Content-Type'] = 'application/json';
+        httpLogger.info(config.url, JSON.stringify(config.data));
         return config;
     },
 );

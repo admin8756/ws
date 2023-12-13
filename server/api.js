@@ -199,7 +199,7 @@ export const spotCommonAdd = (addData) => {
  * @description: 解密接口
   */
 export const decryptData = async (encryptData) => {
-    const { data } = await request.post('/encipher/decrypt', { encryptData })
+    const { data } = await request.post('encipher/decrypt', { encryptData })
     if (data) {
         return JSON.parse(data)
     } else {
@@ -215,6 +215,6 @@ export const getUserInfo = async () => {
 
 // 检查是否导入密钥
 export const checkKeyImport = async () => {
-    const { success } = await request.get('/decode/getStatus')
+    const { success } = await request.get('decode/getStatus')
     return success || false
 }

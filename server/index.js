@@ -6,18 +6,30 @@ const fs = require('fs');
 
 // 用户类
 class User {
-  static login(passWord) {
-    const pwd = Config.get(passWord) || '123456'
-    return pwd === passWord
+  static login(data) {
+    const { passWord } = data
+    const response = {
+      success: false,
+      msg: "登录成功"
+    }
+    if (!passWord) {
+      response.msg = '密码不能为空'
+    }
+    const pwd = Config.get('passWord') || '123456'
+    if (pwd !== passWord) {
+      response.msg = '密码错误'
+    }
+    response.success = `${pwd}` === `${passWord}`
+    return response
   }
 }
 // 日志类
 class Logs {
   /**
    * 查询日志列表
-   * @param {String} type 日志类型 
-   * @param {String} date 
-   * @returns 
+   * @param {String} type 日志类型
+   * @param {String} date
+   * @returns
    */
   static getLogList(type, date) {
     const typeList = ['access', 'app', 'errors']

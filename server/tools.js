@@ -56,18 +56,18 @@ export const runScript = async () => {
         if (!startDate || !endDate) {
             throw await logger.warn('请先设置开始日期和结束日期')
         } else {
-            await getDisclosureInfo(startDate, endDate)
-            await getRealtimeInfo(startDate, endDate)
+            getDisclosureInfo(startDate, endDate)
+            getRealtimeInfo(startDate, endDate)
         }
     }
     if (mode === 'realTime') {
         // 定时器获取实时数据
         timer = setInterval(async () => {
-            logger.info("成功心跳一次")
+            await logger.info("成功心跳一次")
             Config.set('heartStatus', true)
             Config.set('heartLastDate', new Date())
-            await getDisclosureInfo()
-            await getRealtimeInfo()
+            getDisclosureInfo()
+            getRealtimeInfo()
         }, Config.get('heartTime') * 1000)
     }
     logger.info('脚本运行结束')
@@ -141,7 +141,7 @@ export const getRealtimeInfo = async (startDate, endDate) => {
             throw logger.error('开始日期不能大于结束日期')
         }
         // 查询时间区间的信息披露
-        return await getRange(startDate, endDate,'realtime')
+        return await getRange(startDate, endDate, 'realtime')
     } else {
         await getOne(dayjs(new Date()).format('YYYY-MM-DD'), 'realtime')
     }
@@ -178,8 +178,7 @@ export const getRange = async (startDate, endDate, type) => {
     } else {
         // !! 通过判断是否覆盖 检查日期是否已经存在
         let datesInRange = []
-        const skipDate = Config.get('skipDate')
-        if (!skipDate) {
+        if (Config.get('skipDate')) {
             // 查询两个日期之间没有数据的天数
             logger.info(`补全数据模式，将会补全服务器中${startDate} - ${endDate}的${type}数据`)
             datesInRange = await getDays(startDate, endDate)
